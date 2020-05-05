@@ -54,13 +54,14 @@ namespace anBlogg.Application.Services.Implementations
 
         public Post GetPostForAuthor(Guid authorId, Guid postId)
         {
-            return context.Posts.Where(p => p.AuthorId == authorId && p.Id == postId)
-                .AsNoTracking().FirstOrDefault();
+            return context.Posts
+                .Where(p => p.AuthorId == authorId && p.Id == postId)
+                .FirstOrDefault();
         }
 
         public void UpdatePostForAuthor(Guid authorId, Guid postId)
         {
-            throw new NotImplementedException();
+
         }
 
         public void AddPostForAuthor(Guid authorId, Post post)

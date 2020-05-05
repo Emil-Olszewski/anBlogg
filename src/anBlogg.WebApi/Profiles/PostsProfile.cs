@@ -20,6 +20,9 @@ namespace anBlogg.WebApi.Profiles
                 .ForMember(dest => dest.Tags, opt => opt
                     .MapFrom(src => src.Tags.Enumerate().ToArray()))
                 .ForMember(dest => dest.Score, opt => opt.MapFrom(src => src.Score.Value));
+
+            CreateMap<Post, PostInputDto>()
+                .ForMember(dest => dest.Tags, opt => opt.MapFrom(src => src.Tags.Enumerate().ToArray()));
         }
     }
 }
