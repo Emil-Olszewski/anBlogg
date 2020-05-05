@@ -67,11 +67,8 @@ namespace anBlogg.WebApi.Controllers
             if (blogRepository.AuthorNotExist(authorId))
                 return NotFound();
 
-            if (CantValidate(postToAdd))
-                return BadRequest(ModelState);
-
             RememberIds(authorId);
-            return ValidateThenAddPost(postToAdd);
+            return ValidateThenAddOrUpdate(null, postToAdd);
         }
 
         [HttpPut("{postId}")]
@@ -83,7 +80,7 @@ namespace anBlogg.WebApi.Controllers
             var postFromRepo = blogRepository.GetPostForAuthor(authorId, postId);
 
             RememberIds(authorId, postId);
-            return AddOrUpdate(postFromRepo, postToUpdate);
+            return ValidateThenAddOrUpdate(postFromRepo, postToUpdate);
         }
 
         [HttpPatch("{postId}")]
@@ -98,15 +95,7 @@ namespace anBlogg.WebApi.Controllers
             patchDocument.ApplyTo(postDto, ModelState);
 
             RememberIds(authorId, postId);
-            return AddOrUpdate(postFromRepo, postDto);
-        }
-
-        private IActionResult AddOrUpdate(Post postFromRepo, PostInputDto postDto)
-        {
-            if (postFromRepo is null)
-                return ValidateThenAddPost(postDto);
-            else
-                return ValidateThenUpdatePost(postDto, postFromRepo);
+            return ValidateThenAddOrUpdate(postFromRepo, postDto);
         }
 
         private void RememberIds(Guid authorId, Guid postId = new Guid())
@@ -115,11 +104,19 @@ namespace anBlogg.WebApi.Controllers
             currentPostId = postId;
         }
 
-        private IActionResult ValidateThenAddPost(PostInputDto postDto)
+        private IActionResult ValidateThenAddOrUpdate(Post postFromRepo, PostInputDto postDto)
         {
             if (CantValidate(postDto))
                 return ValidationProblem(ModelState);
 
+            if (postFromRepo is null)
+                return AddPost(postDto);
+            else
+                return UpdatePost(postDto, postFromRepo);
+        }
+
+        private IActionResult AddPost(PostInputDto postDto)
+        {        
             var postToAdd = mapper.Map<Post>(postDto);
             if (currentPostId != Guid.Empty)
                 postToAdd.Id = currentPostId;
@@ -132,11 +129,8 @@ namespace anBlogg.WebApi.Controllers
                 new { authorId = currentAuthorId, postId = postToReturn.Id }, postToReturn);
         }
 
-        private IActionResult ValidateThenUpdatePost(PostInputDto postDto, Post postFromRepo)
+        private IActionResult UpdatePost(PostInputDto postDto, Post postFromRepo)
         {
-            if (CantValidate(postDto))
-                return ValidationProblem(ModelState);
-
             mapper.Map(postDto, postFromRepo);
 
             blogRepository.UpdatePostForAuthor(currentAuthorId, currentPostId);
