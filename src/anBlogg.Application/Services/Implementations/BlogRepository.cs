@@ -20,7 +20,7 @@ namespace anBlogg.Application.Services.Implementations
             this.tagsInString = tagsInString;
         }
 
-        public IEnumerable<Post> GetAllPosts(IPostResourceParameters parameters)
+        public IEnumerable<Post> GetPosts(IPostResourceParameters parameters)
         {
             IQueryable<Post> query = context.Posts;
             return DevelopQuery(query, parameters);
@@ -29,22 +29,42 @@ namespace anBlogg.Application.Services.Implementations
         public IEnumerable<Post> GetAllPostsForAuthor(Guid authorId, IPostResourceParameters parameters)
         {
             IQueryable<Post> query = context.Posts.Where(p => p.AuthorId == authorId);
-            return DevelopQuery(query, parameters);
+            return DevelopQuery(query, parameters).ToList();
         }
 
-        private IEnumerable<Post> DevelopQuery(IQueryable<Post> query, IPostResourceParameters parameters)
+        private IQueryable<Post> DevelopQuery(IQueryable<Post> query, IPostResourceParameters parameters)
         {
-            if (parameters != null && parameters.RequiredTags != null)
+            if (parameters != null)
             {
-                var requiredTags = tagsInString.EnumerateWithBrackets(parameters.RequiredTags);
-                foreach (var tag in requiredTags)
+                if(parameters.RequiredTags != null)
                 {
-                    string likePhrase = $"%{tag}%";
-                    query = query.Where(p => EF.Functions.Like(p.Tags.Raw, likePhrase));
+                    var requiredTags = tagsInString.EnumerateWithBrackets(parameters.RequiredTags);
+                    foreach (var tag in requiredTags)
+                    {
+                        string likePhrase = $"%{tag}%";
+                        query = query.Where(p => EF.Functions.Like(p.Tags.Raw, likePhrase));
+                    }
                 }
+
+                query = query.OrderBy(x => x.Created)
+                    .Skip((parameters.PageNumber-1) * parameters.PostsDisplayed)
+                    .Take(parameters.PostsDisplayed).Select(x => x);
             }
 
             return query.AsNoTracking();
+        }
+
+        public IEnumerable<Author> GetAuthors(Guid[] ids)
+        {
+            var authors = new List<Author>();
+            foreach(var id in ids)
+            {
+                var author = context.Authors.Find(id);
+                if (author != null)
+                    authors.Add(author);
+            }
+
+            return authors;
         }
 
         public void DeletePost(Post post)
@@ -98,6 +118,11 @@ namespace anBlogg.Application.Services.Implementations
         public IEnumerable<Comment> GetCommentsForAuthor(Guid id)
         {
             return context.Comments.Where(p => p.AuthorId == id).AsNoTracking();
+        }
+
+        public int GetNumberOfCommentsForPost(Guid id)
+        {
+            return context.Comments.Where(p => p.PostId == id).Count();
         }
     }
 }

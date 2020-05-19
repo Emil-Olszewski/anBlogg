@@ -12,5 +12,6 @@ namespace anBlogg.WebApi.Models
         public string Contents { get; set; }
         public string[] Tags { get; set; }
         public int Score { get; set; }
+        public int Comments { get; set; }
     }
 }

@@ -4,28 +4,26 @@ using anBlogg.Domain.Entities;
 using anBlogg.WebApi.Models;
 using anBlogg.WebApi.ResourceParameters;
 using anBlogg.WebApi.Validators;
-using FluentValidation.AspNetCore;
 using Microsoft.AspNetCore.JsonPatch;
 using Microsoft.AspNetCore.Mvc;
 using System;
 using System.Collections.Generic;
+using Microsoft.AspNetCore.Cors;
+using System.Linq;
+using anBlogg.WebApi.Controllers.Common;
 
 namespace anBlogg.WebApi.Controllers
 {
+    [EnableCors("MyPolicy")]
     [ApiController]
     [Route("api/authors/{authorId}/posts")]
-    public class PostsController : ControllerBase
+    public class PostsController : PostsControllerBase
     {
-        private readonly IMapper mapper;
-        private readonly IBlogRepository blogRepository;
         private Guid currentAuthorId;
         private Guid currentPostId;
 
         public PostsController(IMapper mapper, IBlogRepository blogRepository)
-        {
-            this.mapper = mapper;
-            this.blogRepository = blogRepository;
-        }
+            : base(mapper, blogRepository) { }
 
         [HttpOptions]
         public IActionResult GetAuthorsOptions()
@@ -44,6 +42,7 @@ namespace anBlogg.WebApi.Controllers
 
             var postsFromRepo = blogRepository.GetAllPostsForAuthor(authorId, parameters);
             var mappedPosts = mapper.Map<IEnumerable<PostOutputDto>>(postsFromRepo);
+            GetNumberOfCommentsFor(mappedPosts.ToArray());
             return Ok(mappedPosts);
         }
 
@@ -58,9 +57,10 @@ namespace anBlogg.WebApi.Controllers
                 return NotFound();
 
             var mappedPost = mapper.Map<PostOutputDto>(postFromRepo);
+            GetNumberOfCommentsFor(mappedPost);
             return Ok(mappedPost);
         }
-
+        
         [HttpPost()]
         public IActionResult AddPostForAuthor(Guid authorId, PostInputDto postToAdd)
         {
@@ -141,16 +141,8 @@ namespace anBlogg.WebApi.Controllers
 
         private bool CantValidate(PostInputDto input)
         {
-            var validator = new PostInputDtoValidator();
-            var validationResult = validator.Validate(input);
-
-            if (!validationResult.IsValid)
-            {
-                validationResult.AddToModelState(ModelState, null);
-                return true;
-            }
-
-            return false;
+            return Validator.CantValidate
+                (new PostInputDtoValidator(), input, ModelState);
         }
 
         [HttpDelete("{postId}")]

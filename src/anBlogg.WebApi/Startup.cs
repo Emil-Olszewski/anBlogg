@@ -11,6 +11,7 @@ using Microsoft.Extensions.Hosting;
 using System;
 using Microsoft.Extensions.Logging;
 using Newtonsoft.Json.Serialization;
+using anBlogg.Application.Services;
 
 namespace anBlogg.WebApi
 {
@@ -49,6 +50,11 @@ namespace anBlogg.WebApi
                     new CamelCasePropertyNamesContractResolver();
             });
 
+            services.AddCors(o => o.AddPolicy("MyPolicy", builder =>
+            {
+                builder.AllowAnyOrigin().AllowAnyMethod().AllowAnyHeader();
+            }));
+
             services.AddDomain();
             services.AddApplication();
             services.AddInfrastructure();
@@ -62,6 +68,7 @@ namespace anBlogg.WebApi
 
             app.UseHttpsRedirection();
             app.UseRouting();
+            app.UseCors("MyPolicy");
             app.UseAuthorization();
             app.UseEndpoints(endpoints =>
             {

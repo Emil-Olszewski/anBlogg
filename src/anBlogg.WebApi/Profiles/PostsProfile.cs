@@ -19,7 +19,8 @@ namespace anBlogg.WebApi.Profiles
             CreateMap<Post, PostOutputDto>()
                 .ForMember(dest => dest.Tags, opt => opt
                     .MapFrom(src => src.Tags.Enumerate().ToArray()))
-                .ForMember(dest => dest.Score, opt => opt.MapFrom(src => src.Score.Value));
+                .ForMember(dest => dest.Score, opt => opt.MapFrom(src => src.Score.Value))
+                .ForMember(dest => dest.Comments, opt => opt.Ignore());
 
             CreateMap<Post, PostInputDto>()
                 .ForMember(dest => dest.Tags, opt => opt.MapFrom(src => src.Tags.Enumerate().ToArray()));

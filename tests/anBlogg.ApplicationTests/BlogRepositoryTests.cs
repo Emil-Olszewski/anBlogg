@@ -17,7 +17,7 @@ namespace anBlogg.ApplicationTests
     public class BlogRepositoryTests
     {
         [Test()]
-        public void GetAllPostsTest()
+        public void GetAllPostsWithRequiredTagsTest()
         {
             #region Arrange 
             var posts = new List<Post>()
@@ -58,14 +58,14 @@ namespace anBlogg.ApplicationTests
             context.SaveChanges();
 
             var tagsInString = new Mock<ITagsInString>();
-            SetupTagsInString(parameters, tagsInString);
+            SetupTagsInString(parameters.RequiredTags, tagsInString);
 
             using var otherContext = new BlogContext(options);
             var target = new BlogRepository(otherContext, tagsInString.Object);
             #endregion
 
             #region Act
-            var result = target.GetAllPosts(parameters).ToList();
+            var result = target.GetPosts(parameters).ToList();
             #endregion
 
             #region Assert
@@ -76,7 +76,7 @@ namespace anBlogg.ApplicationTests
         }
 
         [Test()]
-        public void GetAllPostsForAuthor()
+        public void GetAllPostsForAuthorWithRequiredTagsTest()
         {
             #region Arrange 
             var posts = new List<Post>()
@@ -121,7 +121,7 @@ namespace anBlogg.ApplicationTests
             context.SaveChanges();
 
             var tagsInString = new Mock<ITagsInString>();
-            SetupTagsInString(parameters, tagsInString);
+            SetupTagsInString(parameters.RequiredTags, tagsInString);
 
             using var otherContext = new BlogContext(options);
             var target = new BlogRepository(otherContext, tagsInString.Object);
@@ -138,10 +138,68 @@ namespace anBlogg.ApplicationTests
             #endregion
         }
 
-        private static void SetupTagsInString
-            (PostResourceParameters parameters, Mock<ITagsInString> tagsInString)
+        [Test()]
+        public void GetAllPostsPaginatedTest()
         {
-            tagsInString.Setup(t => t.EnumerateWithBrackets(parameters.RequiredTags))
+            #region Arrange 
+            var posts = new List<Post>()
+            {
+                new Post
+                {
+                    AuthorId = Guid.Parse("194888ce-a49e-423b-a412-c60bc4073538"),
+                    Title = "Post1",
+                },
+                new Post
+                {
+                    AuthorId = Guid.Parse("3f53bb14-e42d-43d7-bb9d-79c22bf91076"),
+                    Title = "Post2",
+                },
+                new Post
+                {
+                    AuthorId = Guid.Parse("194888ce-a49e-423b-a412-c60bc4073538"),
+                    Title = "Post3",
+                },
+                new Post
+                {
+                    AuthorId = Guid.Parse("3f53bb14-e42d-43d7-bb9d-79c22bf91076"),
+                    Title = "Post4",
+                }
+            };
+
+            var parameters = new PostResourceParameters()
+            {
+                PostsDisplayed = 2,
+                PageNumber = 2
+            };
+
+            var options = new DbContextOptionsBuilder<BlogContext>()
+                .UseInMemoryDatabase($"TestingDatabase{Guid.NewGuid()}")
+                .Options;
+
+            using var context = new BlogContext(options);
+            context.Posts.AddRange(posts);
+            context.SaveChanges();
+
+            var tagsInString = new Mock<ITagsInString>();
+
+            using var otherContext = new BlogContext(options);
+            var target = new BlogRepository(otherContext, tagsInString.Object);
+            #endregion
+
+            #region Act
+            var result = target.GetPosts(parameters).ToList();
+            #endregion
+
+            #region Assert
+            Assert.AreEqual(2, result.Count());
+            Assert.AreEqual("Post3", result[0].Title);
+            #endregion
+        }
+
+        private static void SetupTagsInString
+            (string tags, Mock<ITagsInString> tagsInString)
+        {
+            tagsInString.Setup(t => t.EnumerateWithBrackets(tags))
                 .Returns(new List<string>() { "<tag2><tag3>" });
         }
     }

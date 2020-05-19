@@ -7,8 +7,9 @@ namespace anBlogg.Application.Services
 {
     public interface IBlogRepository
     {
-        IEnumerable<Post> GetAllPosts(IPostResourceParameters parameters);
+        IEnumerable<Post> GetPosts(IPostResourceParameters parameters);
         IEnumerable<Post> GetAllPostsForAuthor(Guid authorId, IPostResourceParameters parameters);
+        IEnumerable<Author> GetAuthors(Guid[] ids);
         Post GetPostForAuthor(Guid authorId, Guid postId);
         void AddPostForAuthor(Guid authorId, Post post);
         void UpdatePostForAuthor(Guid authorId, Guid postId);
@@ -19,5 +20,6 @@ namespace anBlogg.Application.Services
         int GetNumberOfCommentsForAuthor(Guid id);
         bool AuthorNotExist(Guid id);
         void SaveChanges();
+        int GetNumberOfCommentsForPost(Guid id);
     }
 }
