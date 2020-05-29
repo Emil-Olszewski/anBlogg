@@ -8,13 +8,13 @@ namespace anBlogg.WebApi.Profiles
     {
         public AuthorsProfile()
         {
-            CreateMap<Author, AuthorOutputDto>()
-                .ForMember(dest => dest.NumberOfPosts,
-                opt => opt.MapFrom(src => src.Posts.Count))
-                .ForMember(dest => dest.NumberOfComments,
-                opt => opt.MapFrom(src => src.Comments.Count))
+            CreateMap<Author, AuthorShortOutputDto>()
                 .ForMember(dest => dest.Score,
                 opt => opt.MapFrom(src => src.Score.Value));
+
+            CreateMap<Author, AuthorOutputDto>()
+                .ForMember(dest => dest.Score, opt =>
+                    opt.MapFrom(src => src.Score.Value));
         }
     }
 }

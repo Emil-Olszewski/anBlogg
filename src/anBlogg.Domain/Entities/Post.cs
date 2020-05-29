@@ -14,6 +14,6 @@ namespace anBlogg.Domain.Entities
         public Tags Tags { get; set; }
         public Score Score { get; set; }
         public IList<Comment> Comments { get; set; }
-            = new List<Comment>();
+            =  new List<Comment>();
     }
 }

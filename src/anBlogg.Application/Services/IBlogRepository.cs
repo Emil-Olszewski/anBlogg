@@ -9,17 +9,16 @@ namespace anBlogg.Application.Services
     {
         IEnumerable<Post> GetPosts(IPostResourceParameters parameters);
         IEnumerable<Post> GetAllPostsForAuthor(Guid authorId, IPostResourceParameters parameters);
-        IEnumerable<Author> GetAuthors(Guid[] ids);
         Post GetPostForAuthor(Guid authorId, Guid postId);
         void AddPostForAuthor(Guid authorId, Post post);
         void UpdatePostForAuthor(Guid authorId, Guid postId);
         void DeletePost(Post post);
         IEnumerable<Author> GetAllAuthors();
         IEnumerable<Comment> GetCommentsForAuthor(Guid authorId);
-        int GetNumberOfPostsForAuthor(Guid id);
-        int GetNumberOfCommentsForAuthor(Guid id);
         bool AuthorNotExist(Guid id);
         void SaveChanges();
-        int GetNumberOfCommentsForPost(Guid id);
+        object GetAuthor(Guid id);
+        int GetPostsNumberForAuthor(Guid id);
+        int GetCommentsNumberForAuthor(Guid id);
     }
 }

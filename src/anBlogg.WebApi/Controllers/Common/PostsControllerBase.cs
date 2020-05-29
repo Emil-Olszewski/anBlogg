@@ -18,8 +18,7 @@ namespace anBlogg.WebApi.Controllers.Common
 
         protected void GetNumberOfCommentsFor(params PostOutputDto[] mappedPosts)
         {
-            foreach (var post in mappedPosts)
-                post.Comments = blogRepository.GetNumberOfCommentsForPost(post.Id);
+            
         }
     }
 }

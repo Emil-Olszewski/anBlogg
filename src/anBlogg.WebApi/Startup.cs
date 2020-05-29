@@ -11,7 +11,9 @@ using Microsoft.Extensions.Hosting;
 using System;
 using Microsoft.Extensions.Logging;
 using Newtonsoft.Json.Serialization;
-using anBlogg.Application.Services;
+using Microsoft.AspNetCore.Cors.Infrastructure;
+using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Routing;
 
 namespace anBlogg.WebApi
 {
@@ -19,11 +21,7 @@ namespace anBlogg.WebApi
     {
         public IConfiguration Configuration { get; }
 
-        public static readonly ILoggerFactory Logger
-            = LoggerFactory.Create(builder => 
-            { 
-                builder.AddConsole(); 
-            });
+        public static readonly ILoggerFactory Logger = CreateLogger();
 
         public Startup(IConfiguration configuration)
         {
@@ -32,32 +30,39 @@ namespace anBlogg.WebApi
 
         public void ConfigureServices(IServiceCollection services)
         {
-            services.AddDbContext<BlogContext>(options =>
-            {
-                options.UseSqlServer(Configuration["Data:AppDb:ConnectionString"]);
-                options.UseLoggerFactory(Logger);
-                options.EnableSensitiveDataLogging();
-            });
+            services.AddDbContext<BlogContext>(SetupDbContext);
 
-            services
-            .AddControllers(options => 
+            void SetupDbContext(DbContextOptionsBuilder builder)
             {
+                builder.UseSqlServer(Configuration["Data:AppDb:ConnectionString"]);
+                builder.UseLoggerFactory(Logger);
+                builder.EnableSensitiveDataLogging();
+            }
+
+            services.AddControllers(SetupControllers)
+                .AddNewtonsoftJson(SetupNewtonsoftJson);
+
+            static void SetupControllers(MvcOptions options) =>
                 options.ReturnHttpNotAcceptable = true;
-            })
-            .AddNewtonsoftJson(options => 
-            {
-                options.SerializerSettings.ContractResolver = 
-                    new CamelCasePropertyNamesContractResolver();
-            });
 
-            services.AddCors(o => o.AddPolicy("MyPolicy", builder =>
-            {
+            static void SetupNewtonsoftJson(MvcNewtonsoftJsonOptions options) =>
+                options.SerializerSettings.ContractResolver =
+                    new CamelCasePropertyNamesContractResolver();
+
+            services.AddCors(SetupCors);
+
+            static void SetupCors(CorsOptions options) =>
+                options.AddPolicy("MyPolicy", SetupPolicyBuilder);
+
+            static void SetupPolicyBuilder(CorsPolicyBuilder builder) => 
                 builder.AllowAnyOrigin().AllowAnyMethod().AllowAnyHeader();
-            }));
 
             services.AddDomain();
+
             services.AddApplication();
+
             services.AddInfrastructure();
+
             services.AddAutoMapper(AppDomain.CurrentDomain.GetAssemblies());
         }
 
@@ -67,13 +72,25 @@ namespace anBlogg.WebApi
                 app.UseDeveloperExceptionPage();
 
             app.UseHttpsRedirection();
+
             app.UseRouting();
+
             app.UseCors("MyPolicy");
+
             app.UseAuthorization();
-            app.UseEndpoints(endpoints =>
-            {
-                endpoints.MapControllers();
-            });
+
+            app.UseEndpoints(SetupEndpoints);
+
+            static void SetupEndpoints(IEndpointRouteBuilder builder) => 
+                builder.MapControllers(); ;
+        }
+
+        private static ILoggerFactory CreateLogger()
+        {
+            return LoggerFactory.Create(SetupLoggerFactory);
+
+            static void SetupLoggerFactory (ILoggingBuilder builder) =>
+                builder.AddConsole();
         }
     }
 }

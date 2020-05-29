@@ -7,6 +7,8 @@ using anBlogg.WebApi.Models;
 
 namespace anBlogg.WebApiTests
 {
+    /* well i know these tests arent completely independent but it was okay for now, i promise ill fix it later */
+
     [TestFixture()]
     public class ProfilesTests
     {
@@ -14,8 +16,13 @@ namespace anBlogg.WebApiTests
         public void PostsProfileTest()
         {
             // Arrange
-            var mapperConfiguration
-                = new MapperConfiguration(cfg => cfg.AddProfile(new PostsProfile()));
+            var mapperConfiguration = new MapperConfiguration(cfg =>
+            {
+                cfg.AddProfile(new PostsProfile());
+                cfg.AddProfile(new AuthorsProfile());
+                cfg.AddProfile(new CommentsProfile());
+            });
+
             var target = new Mapper(mapperConfiguration);
 
             var postInput = new PostInputDto()
@@ -63,8 +70,11 @@ namespace anBlogg.WebApiTests
         public void CommentsProfileTest()
         {
             // Arrange
-            var mapperConfiguration
-                = new MapperConfiguration(cfg => cfg.AddProfile(new CommentsProfile()));
+            var mapperConfiguration = new MapperConfiguration(cfg =>
+            {
+                cfg.AddProfile(new CommentsProfile());
+                cfg.AddProfile(new AuthorsProfile());
+            });
 
             // Act 
             var testDelegate = new TestDelegate(mapperConfiguration.AssertConfigurationIsValid);

@@ -5,7 +5,6 @@ using anBlogg.WebApi.ResourceParameters;
 using Microsoft.AspNetCore.Mvc;
 using System.Collections.Generic;
 using anBlogg.WebApi.Validators;
-using System.Linq;
 using anBlogg.WebApi.Controllers.Common;
 
 namespace anBlogg.WebApi.Controllers
@@ -27,7 +26,6 @@ namespace anBlogg.WebApi.Controllers
 
             var postsFromRepo = blogRepository.GetPosts(parameters);
             var mappedPosts = mapper.Map<IEnumerable<PostOutputDto>>(postsFromRepo);
-            GetNumberOfCommentsFor(mappedPosts.ToArray());
 
             return Ok(mappedPosts);
         }

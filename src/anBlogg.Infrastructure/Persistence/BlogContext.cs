@@ -25,11 +25,10 @@ namespace anBlogg.Infrastructure.Persistence
             modelBuilder.ApplyConfiguration(new PostConfiguration());
             modelBuilder.ApplyConfiguration(new CommentConfiguration());
 
-            modelBuilder.Entity<Author>().HasData(BlogContextSeeds.Authors);
-            modelBuilder.Entity<Post>().HasData(BlogContextSeeds.Posts);
-            modelBuilder.Entity<Post>().OwnsOne(p => p.Tags).HasData(BlogContextSeeds.Tags);
-
-            modelBuilder.Entity<Comment>().HasData(BlogContextSeeds.Comments);
+            //modelBuilder.Entity<Author>().HasData(BlogContextSeeds.Authors);
+            //modelBuilder.Entity<Post>().HasData(BlogContextSeeds.Posts);
+            //modelBuilder.Entity<Post>().OwnsOne(p => p.Tags).HasData(BlogContextSeeds.Tags);
+            //modelBuilder.Entity<Comment>().HasData(BlogContextSeeds.Comments);
             base.OnModelCreating(modelBuilder);
         }
 

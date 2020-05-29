@@ -26,7 +26,7 @@ namespace anBlogg.WebApi.Controllers
             : base(mapper, blogRepository) { }
 
         [HttpOptions]
-        public IActionResult GetAuthorsOptions()
+        public IActionResult GetPostOptions()
         {
             Response.Headers.Add("Allow", "GET,POST,PUT,PATCH,DELETE,OPTIONS");
             return Ok();
@@ -42,7 +42,6 @@ namespace anBlogg.WebApi.Controllers
 
             var postsFromRepo = blogRepository.GetAllPostsForAuthor(authorId, parameters);
             var mappedPosts = mapper.Map<IEnumerable<PostOutputDto>>(postsFromRepo);
-            GetNumberOfCommentsFor(mappedPosts.ToArray());
             return Ok(mappedPosts);
         }
 
@@ -57,7 +56,6 @@ namespace anBlogg.WebApi.Controllers
                 return NotFound();
 
             var mappedPost = mapper.Map<PostOutputDto>(postFromRepo);
-            GetNumberOfCommentsFor(mappedPost);
             return Ok(mappedPost);
         }
         

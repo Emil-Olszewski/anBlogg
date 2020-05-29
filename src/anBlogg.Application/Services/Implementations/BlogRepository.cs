@@ -34,37 +34,37 @@ namespace anBlogg.Application.Services.Implementations
 
         private IQueryable<Post> DevelopQuery(IQueryable<Post> query, IPostResourceParameters parameters)
         {
-            if (parameters != null)
-            {
-                if(parameters.RequiredTags != null)
-                {
-                    var requiredTags = tagsInString.EnumerateWithBrackets(parameters.RequiredTags);
-                    foreach (var tag in requiredTags)
-                    {
-                        string likePhrase = $"%{tag}%";
-                        query = query.Where(p => EF.Functions.Like(p.Tags.Raw, likePhrase));
-                    }
-                }
+            if (parameters.RequiredTags != null)
+                query = ApplyTags(query, parameters.RequiredTags);
 
-                query = query.OrderBy(x => x.Created)
-                    .Skip((parameters.PageNumber-1) * parameters.PostsDisplayed)
-                    .Take(parameters.PostsDisplayed).Select(x => x);
-            }
+            query = Paginate(query, parameters.PageNumber, parameters.PostsDisplayed);
+            query = IncludeAuthorsAndComments(query);
 
             return query.AsNoTracking();
         }
 
-        public IEnumerable<Author> GetAuthors(Guid[] ids)
+        private IQueryable<Post> ApplyTags(IQueryable<Post> query, string requiredTags)
         {
-            var authors = new List<Author>();
-            foreach(var id in ids)
+            var enumeratedTags = tagsInString.EnumerateWithBrackets(requiredTags);
+            foreach (var tag in enumeratedTags)
             {
-                var author = context.Authors.Find(id);
-                if (author != null)
-                    authors.Add(author);
+                string likePhrase = $"%{tag}%";
+                query = query.Where(p => EF.Functions.Like(p.Tags.Raw, likePhrase));
             }
 
-            return authors;
+            return query;
+        }
+
+        private IQueryable<Post> Paginate(IQueryable<Post> query, int pageNumber, int postsDisplayed)
+        {
+           return query.OrderByDescending(p => p.Created)
+                   .Skip((pageNumber - 1) * postsDisplayed).Take(postsDisplayed);
+        }
+
+        private IQueryable<Post> IncludeAuthorsAndComments(IQueryable<Post> query)
+        {
+            query = query.Include(c => c.Author);
+            return query.Include(c => c.Comments).ThenInclude(c => c.Author);
         }
 
         public void DeletePost(Post post)
@@ -105,24 +105,24 @@ namespace anBlogg.Application.Services.Implementations
             return context.Authors.AsNoTracking();
         }
 
-        public int GetNumberOfCommentsForAuthor(Guid id)
-        {
-            return context.Posts.Where(p => p.AuthorId == id).Count();
-        }
-
-        public int GetNumberOfPostsForAuthor(Guid id)
-        {
-            return context.Comments.Where(p => p.AuthorId == id).Count();
-        }
-
         public IEnumerable<Comment> GetCommentsForAuthor(Guid id)
         {
             return context.Comments.Where(p => p.AuthorId == id).AsNoTracking();
         }
 
-        public int GetNumberOfCommentsForPost(Guid id)
+        public object GetAuthor(Guid id)
         {
-            return context.Comments.Where(p => p.PostId == id).Count();
+            return context.Authors.Find(id);
+        }
+
+        public int GetPostsNumberForAuthor(Guid id)
+        {
+            return context.Posts.Where(p => p.AuthorId == id).Count();
+        }
+
+        public int GetCommentsNumberForAuthor(Guid id)
+        {
+            return context.Comments.Where(p => p.AuthorId == id).Count();
         }
     }
 }
