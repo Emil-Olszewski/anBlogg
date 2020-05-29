@@ -1,1 +1,91 @@
-/* You can add global styles to this file, and also import other style files */
+/* @import '../node_modules/bootstrap/dist/css/bootstrap.min.css'; */
+
+body {
+    background-color: rgba(232, 197, 82, 0.014);
+}
+
+.card {
+    border-radius: 0;
+    border-style: none;
+    -webkit-box-shadow: 0px 6px 12px 0px rgba(0, 0, 0, 0.055);
+    -moz-box-shadow: 0px 6px 12px 0px rgba(0, 0, 0, 0.055);
+    box-shadow: 0px 6px 12px 0px rgba(0, 0, 0, 0.055);
+}
+
+.card img {
+    width: 100%;
+    height: auto;
+    border: 10px solid #46BCAE;
+}
+
+.card-header {
+    background-color: #46BCAE;
+    color:white;
+}
+
+.navbar {
+    -webkit-box-shadow: 0px 6px 12px 0px rgba(0, 0, 0, 0.10);
+    -moz-box-shadow: 0px 6px 12px 0px rgba(0, 0, 0, 0.10);
+    box-shadow: 0px 6px 12px 0px rgba(0, 0, 0, 0.10);
+}
+
+.card .card {
+    border-style: dashed;
+    box-shadow: none;
+    display: block;
+}
+
+.an-dashed {
+    border-style: dashed;
+}
+
+.an-text-primary {
+    color: #E8C552
+}
+
+.an-bg-primary {
+    background-color: #E8C552
+}
+
+.an-text-secondary {
+    color: #46BCAE
+}
+
+.an-bg-secondary {
+    background-color: #46BCAE;
+}
+
+.an-active.an-active.an-active.an-active {
+    font-weight:600;
+    color: rgba(255, 255, 255, 0.726);
+}
+
+.an-btn-secondary {
+    background-color: #46BCAE;
+    color: white;
+}
+
+.an-btn-secondary:hover {
+    color: white;
+    background-color: #E8C552;
+}
+
+.an-badge-secondary {
+    background-color: #46BCAE;
+    color: white;
+}
+
+.an-badge-secondary:hover {
+    background-color: #E8C552;
+    color: white;
+}
+
+.an-invalid {
+    border: 1px solid rgba(255, 0, 0, 0.315);
+    background-color: rgba(255, 0, 0, 0.007);
+}
+
+.an-invalid-text {
+    color: red;
+}
+

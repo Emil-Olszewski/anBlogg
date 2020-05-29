@@ -4,12 +4,12 @@ using Microsoft.EntityFrameworkCore.Metadata.Builders;
 
 namespace anBlogg.Infrastructure.Persistence.Configurations
 {
-    class AuthorConfiguration : IEntityTypeConfiguration<Author>
+    internal class AuthorConfiguration : IEntityTypeConfiguration<Author>
     {
         public void Configure(EntityTypeBuilder<Author> builder)
         {
             builder
-                .OwnsOne(a=> a.Score);
+                .OwnsOne(a => a.Score);
 
             builder
                 .HasMany(a => a.Comments)

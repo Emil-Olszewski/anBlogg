@@ -13,7 +13,8 @@ namespace anBlogg.Domain.Entities
         public string Contents { get; set; }
         public Tags Tags { get; set; }
         public Score Score { get; set; }
+
         public IList<Comment> Comments { get; set; }
-            =  new List<Comment>();
+            = new List<Comment>();
     }
 }

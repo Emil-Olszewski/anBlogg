@@ -1,7 +1,7 @@
-﻿using AutoMapper;
-using anBlogg.Domain.Entities;
+﻿using anBlogg.Domain.Entities;
 using anBlogg.Domain.ValueObjects;
 using anBlogg.WebApi.Models;
+using AutoMapper;
 using System.Linq;
 
 namespace anBlogg.WebApi.Profiles
@@ -11,13 +11,13 @@ namespace anBlogg.WebApi.Profiles
         public PostsProfile()
         {
             CreateMap<PostInputDto, Post>()
-                .ForMember(dest => dest.Title, opt => 
+                .ForMember(dest => dest.Title, opt =>
                     opt.MapFrom(src => src.Title))
-                .ForMember(dest => dest.Contents, opt => 
+                .ForMember(dest => dest.Contents, opt =>
                     opt.MapFrom(src => src.Contents))
-                .ForMember(dest => dest.Tags, opt => 
+                .ForMember(dest => dest.Tags, opt =>
                     opt.MapFrom(src => new Tags(src.Tags)))
-                .ForAllOtherMembers(opt => 
+                .ForAllOtherMembers(opt =>
                     opt.Ignore());
 
             CreateMap<Post, PostOutputDto>()
@@ -29,7 +29,7 @@ namespace anBlogg.WebApi.Profiles
                     opt.MapFrom(src => src.Score.Value));
 
             CreateMap<Post, PostInputDto>()
-                .ForMember(dest => dest.Tags, opt => 
+                .ForMember(dest => dest.Tags, opt =>
                     opt.MapFrom(src => src.Tags.Enumerate().ToArray()));
         }
     }

@@ -1,10 +1,10 @@
-﻿using AutoMapper;
-using anBlogg.Application.Services;
+﻿using anBlogg.Application.Services;
 using anBlogg.WebApi.Models;
-using Microsoft.AspNetCore.Mvc;
-using System.Collections.Generic;
+using AutoMapper;
 using Microsoft.AspNetCore.Cors;
+using Microsoft.AspNetCore.Mvc;
 using System;
+using System.Collections.Generic;
 using System.Linq;
 
 namespace anBlogg.WebApi.Controllers
@@ -23,7 +23,7 @@ namespace anBlogg.WebApi.Controllers
             this.blogRepository = blogRepository;
         }
 
-        public ActionResult<IEnumerable<AuthorOutputDto>> GetAllAuthors() 
+        public ActionResult<IEnumerable<AuthorOutputDto>> GetAllAuthors()
         {
             var authorsFromRepo = blogRepository.GetAllAuthors().ToList();
             var authorsToReturn = mapper.Map<IEnumerable<AuthorOutputDto>>(authorsFromRepo);

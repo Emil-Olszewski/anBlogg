@@ -1,9 +1,9 @@
-﻿using NUnit.Framework;
-using AutoMapper;
-using anBlogg.WebApi.Profiles;
-using anBlogg.Domain.Entities;
+﻿using anBlogg.Domain.Entities;
 using anBlogg.Domain.ValueObjects;
 using anBlogg.WebApi.Models;
+using anBlogg.WebApi.Profiles;
+using AutoMapper;
+using NUnit.Framework;
 
 namespace anBlogg.WebApiTests
 {
@@ -28,7 +28,7 @@ namespace anBlogg.WebApiTests
             var postInput = new PostInputDto()
             {
                 Contents = "Contents",
-                Tags = new string [] { "tag1", "tag2", "tag3" }
+                Tags = new string[] { "tag1", "tag2", "tag3" }
             };
 
             var post = new Post()
@@ -36,7 +36,7 @@ namespace anBlogg.WebApiTests
                 Tags = new Tags("tag1", "tag2", "tag3")
             };
 
-            // Act 
+            // Act
             var testDelegate = new TestDelegate(mapperConfiguration.AssertConfigurationIsValid);
             var inputResult = target.Map<Post>(postInput);
             var outputResult = target.Map<PostOutputDto>(post);
@@ -59,7 +59,7 @@ namespace anBlogg.WebApiTests
             var mapperConfiguration
                 = new MapperConfiguration(cfg => cfg.AddProfile(new AuthorsProfile()));
 
-            // Act 
+            // Act
             var testDelegate = new TestDelegate(mapperConfiguration.AssertConfigurationIsValid);
 
             // Assert
@@ -76,7 +76,7 @@ namespace anBlogg.WebApiTests
                 cfg.AddProfile(new AuthorsProfile());
             });
 
-            // Act 
+            // Act
             var testDelegate = new TestDelegate(mapperConfiguration.AssertConfigurationIsValid);
 
             // Assert

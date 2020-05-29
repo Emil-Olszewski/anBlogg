@@ -4,7 +4,7 @@ using Microsoft.EntityFrameworkCore.Metadata.Builders;
 
 namespace anBlogg.Infrastructure.Persistence.Configurations
 {
-    class PostConfiguration : IEntityTypeConfiguration<Post>
+    internal class PostConfiguration : IEntityTypeConfiguration<Post>
     {
         public void Configure(EntityTypeBuilder<Post> builder)
         {

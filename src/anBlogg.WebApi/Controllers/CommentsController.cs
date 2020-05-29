@@ -1,6 +1,6 @@
-﻿using AutoMapper;
-using anBlogg.Application.Services;
+﻿using anBlogg.Application.Services;
 using anBlogg.WebApi.Models;
+using AutoMapper;
 using Microsoft.AspNetCore.Mvc;
 using System;
 using System.Collections.Generic;

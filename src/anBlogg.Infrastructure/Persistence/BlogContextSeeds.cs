@@ -83,7 +83,7 @@ namespace anBlogg.Infrastructure.Persistence
         public static Comment[] Comments =
         {
             new Comment()
-            {   
+            {
                 Id = Guid.Parse("b56a3616-6b3f-4e78-aae1-04ca960c1a54"),
                 PostId = Guid.Parse("3eabbb2c-4bbd-4863-9392-674b28aa7dcb"),
                 AuthorId = Guid.Parse("184edd78-aeab-4c20-becc-6d3dc9f1b841"),

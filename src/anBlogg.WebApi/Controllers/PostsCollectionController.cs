@@ -1,11 +1,11 @@
-﻿using AutoMapper;
-using anBlogg.Application.Services;
+﻿using anBlogg.Application.Services;
+using anBlogg.WebApi.Controllers.Common;
 using anBlogg.WebApi.Models;
 using anBlogg.WebApi.ResourceParameters;
+using anBlogg.WebApi.Validators;
+using AutoMapper;
 using Microsoft.AspNetCore.Mvc;
 using System.Collections.Generic;
-using anBlogg.WebApi.Validators;
-using anBlogg.WebApi.Controllers.Common;
 
 namespace anBlogg.WebApi.Controllers
 {
@@ -13,8 +13,7 @@ namespace anBlogg.WebApi.Controllers
     [Route("api/posts")]
     public class PostsCollectionController : PostsControllerBase
     {
-
-        public PostsCollectionController(IMapper mapper, IBlogRepository blogRepository) 
+        public PostsCollectionController(IMapper mapper, IBlogRepository blogRepository)
             : base(mapper, blogRepository) { }
 
         [HttpGet()]

@@ -21,7 +21,6 @@ namespace anBlogg.DomainTests
             Assert.AreEqual("tag3", result[2]);
         }
 
-
         [Test()]
         public void EnumerateWithBracketsTest()
         {

@@ -1,19 +1,19 @@
-using AutoMapper;
 using anBlogg.Application;
 using anBlogg.Infrastructure;
 using anBlogg.Infrastructure.Persistence;
+using AutoMapper;
 using Microsoft.AspNetCore.Builder;
+using Microsoft.AspNetCore.Cors.Infrastructure;
 using Microsoft.AspNetCore.Hosting;
+using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Routing;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
-using System;
 using Microsoft.Extensions.Logging;
 using Newtonsoft.Json.Serialization;
-using Microsoft.AspNetCore.Cors.Infrastructure;
-using Microsoft.AspNetCore.Mvc;
-using Microsoft.AspNetCore.Routing;
+using System;
 
 namespace anBlogg.WebApi
 {
@@ -54,7 +54,7 @@ namespace anBlogg.WebApi
             static void SetupCors(CorsOptions options) =>
                 options.AddPolicy("MyPolicy", SetupPolicyBuilder);
 
-            static void SetupPolicyBuilder(CorsPolicyBuilder builder) => 
+            static void SetupPolicyBuilder(CorsPolicyBuilder builder) =>
                 builder.AllowAnyOrigin().AllowAnyMethod().AllowAnyHeader();
 
             services.AddDomain();
@@ -81,7 +81,7 @@ namespace anBlogg.WebApi
 
             app.UseEndpoints(SetupEndpoints);
 
-            static void SetupEndpoints(IEndpointRouteBuilder builder) => 
+            static void SetupEndpoints(IEndpointRouteBuilder builder) =>
                 builder.MapControllers(); ;
         }
 
@@ -89,7 +89,7 @@ namespace anBlogg.WebApi
         {
             return LoggerFactory.Create(SetupLoggerFactory);
 
-            static void SetupLoggerFactory (ILoggingBuilder builder) =>
+            static void SetupLoggerFactory(ILoggingBuilder builder) =>
                 builder.AddConsole();
         }
     }

@@ -3,8 +3,6 @@ using anBlogg.Domain.Entities;
 using anBlogg.Infrastructure.Persistence.Configurations;
 using Microsoft.EntityFrameworkCore;
 using System;
-using System.Threading;
-using System.Threading.Tasks;
 
 namespace anBlogg.Infrastructure.Persistence
 {
@@ -16,7 +14,6 @@ namespace anBlogg.Infrastructure.Persistence
 
         public BlogContext(DbContextOptions<BlogContext> options) : base(options)
         {
-
         }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)

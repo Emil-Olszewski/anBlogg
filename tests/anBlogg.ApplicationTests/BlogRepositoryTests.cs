@@ -34,6 +34,7 @@ namespace anBlogg.ApplicationTests
         public void GetAllPostWithRequiredTagsTest()
         {
             #region Arrange
+
             var connection = SetConnection();
             var options = GetOptionsFor(connection);
             PrepareDatabaseWith(options);
@@ -45,24 +46,29 @@ namespace anBlogg.ApplicationTests
 
             using var context = new BlogContext(options);
             var target = new BlogRepository(context, tagsInString.Object);
-            #endregion
+
+            #endregion Arrange
 
             #region Act
+
             var result = target.GetPosts(parameters).ToList();
-            #endregion
+
+            #endregion Act
 
             #region Assert
+
             Assert.AreEqual(2, result.Count());
             Assert.AreEqual("Post3", result[0].Title);
             Assert.AreEqual("Post1", result[1].Title);
-            #endregion
 
+            #endregion Assert
         }
 
         [Test()]
         public void GetAllPostsForAuthorWithRequiredTagsTest()
         {
-            #region Arrange 
+            #region Arrange
+
             var connection = SetConnection();
             var options = GetOptionsFor(connection);
             PrepareDatabaseWith(options);
@@ -79,24 +85,30 @@ namespace anBlogg.ApplicationTests
 
             using var context = new BlogContext(options);
             var target = new BlogRepository(context, tagsInString.Object);
-            #endregion
+
+            #endregion Arrange
 
             #region Act
+
             var result1 = target.GetAllPostsForAuthor(guids[1], parameters1).ToList();
             var result2 = target.GetAllPostsForAuthor(guids[1], parameters2).ToList();
-            #endregion
+
+            #endregion Act
 
             #region Assert
+
             Assert.AreEqual(1, result1.Count());
             Assert.AreEqual(0, result2.Count());
             Assert.AreEqual("Post4", result1[0].Title);
-            #endregion
+
+            #endregion Assert
         }
 
         [Test()]
         public void GetAllPostsPaginatedTest()
         {
-            #region Arrange 
+            #region Arrange
+
             var connection = SetConnection();
             var options = GetOptionsFor(connection);
             PrepareDatabaseWith(options);
@@ -109,19 +121,24 @@ namespace anBlogg.ApplicationTests
 
             using var context = new BlogContext(options);
             var target = new BlogRepository(context, tagsInString.Object);
-            #endregion
-           
+
+            #endregion Arrange
+
             #region Act
+
             var result = target.GetPosts(parameters).ToList();
             var result2 = target.GetPosts(new PostResourceParameters()).ToList();
-            #endregion
+
+            #endregion Act
 
             #region Assert
+
             Assert.AreEqual(2, result.Count());
             Assert.AreEqual("Post2", result[0].Title);
-            #endregion
+
+            #endregion Assert
         }
-      
+
         private void PopulateGuids()
         {
             guids = new List<Guid>();
@@ -185,8 +202,8 @@ namespace anBlogg.ApplicationTests
 
         private SqliteConnection SetConnection()
         {
-            var connectionStringBuilder = new SqliteConnectionStringBuilder 
-                { DataSource = ":memory:" };
+            var connectionStringBuilder = new SqliteConnectionStringBuilder
+            { DataSource = ":memory:" };
             return new SqliteConnection(connectionStringBuilder.ToString());
         }
 

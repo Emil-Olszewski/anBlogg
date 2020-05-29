@@ -1,16 +1,15 @@
-﻿using AutoMapper;
-using anBlogg.Application.Services;
+﻿using anBlogg.Application.Services;
 using anBlogg.Domain.Entities;
+using anBlogg.WebApi.Controllers.Common;
 using anBlogg.WebApi.Models;
 using anBlogg.WebApi.ResourceParameters;
 using anBlogg.WebApi.Validators;
+using AutoMapper;
+using Microsoft.AspNetCore.Cors;
 using Microsoft.AspNetCore.JsonPatch;
 using Microsoft.AspNetCore.Mvc;
 using System;
 using System.Collections.Generic;
-using Microsoft.AspNetCore.Cors;
-using System.Linq;
-using anBlogg.WebApi.Controllers.Common;
 
 namespace anBlogg.WebApi.Controllers
 {
@@ -58,7 +57,7 @@ namespace anBlogg.WebApi.Controllers
             var mappedPost = mapper.Map<PostOutputDto>(postFromRepo);
             return Ok(mappedPost);
         }
-        
+
         [HttpPost()]
         public IActionResult AddPostForAuthor(Guid authorId, PostInputDto postToAdd)
         {
@@ -114,7 +113,7 @@ namespace anBlogg.WebApi.Controllers
         }
 
         private IActionResult AddPost(PostInputDto postDto)
-        {        
+        {
             var postToAdd = mapper.Map<Post>(postDto);
             if (currentPostId != Guid.Empty)
                 postToAdd.Id = currentPostId;
@@ -133,7 +132,7 @@ namespace anBlogg.WebApi.Controllers
 
             blogRepository.UpdatePostForAuthor(currentAuthorId, currentPostId);
             blogRepository.SaveChanges();
-            
+
             return NoContent();
         }
 

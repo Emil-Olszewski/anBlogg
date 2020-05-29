@@ -18,7 +18,6 @@ namespace anBlogg.WebApi.Controllers.Common
 
         protected void GetNumberOfCommentsFor(params PostOutputDto[] mappedPosts)
         {
-            
         }
     }
 }

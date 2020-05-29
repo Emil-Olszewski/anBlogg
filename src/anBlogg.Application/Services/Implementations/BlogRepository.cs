@@ -57,8 +57,8 @@ namespace anBlogg.Application.Services.Implementations
 
         private IQueryable<Post> Paginate(IQueryable<Post> query, int pageNumber, int postsDisplayed)
         {
-           return query.OrderByDescending(p => p.Created)
-                   .Skip((pageNumber - 1) * postsDisplayed).Take(postsDisplayed);
+            return query.OrderByDescending(p => p.Created)
+                    .Skip((pageNumber - 1) * postsDisplayed).Take(postsDisplayed);
         }
 
         private IQueryable<Post> IncludeAuthorsAndComments(IQueryable<Post> query)
@@ -81,7 +81,6 @@ namespace anBlogg.Application.Services.Implementations
 
         public void UpdatePostForAuthor(Guid authorId, Guid postId)
         {
-
         }
 
         public void AddPostForAuthor(Guid authorId, Post post)
