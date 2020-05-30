@@ -1,5 +1,5 @@
-﻿using anBlogg.Application.Services.Implementations;
-using anBlogg.Domain.Services.Implementations;
+﻿using anBlogg.Application.Services;
+using anBlogg.Application.Services.Implementations;
 using Microsoft.Extensions.DependencyInjection;
 
 namespace anBlogg.Application
@@ -8,8 +8,8 @@ namespace anBlogg.Application
     {
         public static IServiceCollection AddApplication(this IServiceCollection services)
         {
-            services.AddTransient<Domain.Services.ITagsInString, TagsInString>();
-            services.AddTransient<Services.IBlogRepository, BlogRepository>();
+            services.AddTransient<IBlogRepository, BlogRepository>();
+            services.AddTransient<IPropertyMappingService, PropertyMappingService>();
             return services;
         }
     }

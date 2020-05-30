@@ -1,4 +1,7 @@
-﻿using anBlogg.Application.Services.Implementations;
+﻿using anBlogg.Application.Services;
+using anBlogg.Application.Services.Helpers;
+using anBlogg.Application.Services.Implementations;
+using anBlogg.Application.Services.Models;
 using anBlogg.Domain.Entities;
 using anBlogg.Domain.Services;
 using anBlogg.Domain.ValueObjects;
@@ -21,6 +24,7 @@ namespace anBlogg.ApplicationTests
         private List<Post> posts;
         private List<Author> authors;
         private Mock<ITagsInString> tagsInString;
+        private Mock<IPropertyMappingService> mappingService;
 
         public BlogRepositoryTests()
         {
@@ -28,39 +32,35 @@ namespace anBlogg.ApplicationTests
             PopulatePosts();
             PopulateAuthors();
             SetupTagsInString();
+            SetupMappingService();
         }
 
         [Test()]
         public void GetAllPostWithRequiredTagsTest()
         {
             #region Arrange
-
             var connection = SetConnection();
             var options = GetOptionsFor(connection);
             PrepareDatabaseWith(options);
 
             var parameters = new PostResourceParameters()
             {
-                RequiredTags = "<tag2><tag3>",
+                Tags = "<tag2><tag3>",
+                OrderBy = ""
             };
 
             using var context = new BlogContext(options);
-            var target = new BlogRepository(context, tagsInString.Object);
-
+            var target = new BlogRepository(context, tagsInString.Object, mappingService.Object);
             #endregion Arrange
 
             #region Act
-
             var result = target.GetPosts(parameters).ToList();
-
             #endregion Act
 
             #region Assert
-
             Assert.AreEqual(2, result.Count());
-            Assert.AreEqual("Post3", result[0].Title);
-            Assert.AreEqual("Post1", result[1].Title);
-
+            Assert.IsNotNull(result.Find(r => r.Title == "Post3"));
+            Assert.IsNotNull(result.Find(r => r.Title == "Post1"));
             #endregion Assert
         }
 
@@ -68,39 +68,35 @@ namespace anBlogg.ApplicationTests
         public void GetAllPostsForAuthorWithRequiredTagsTest()
         {
             #region Arrange
-
             var connection = SetConnection();
             var options = GetOptionsFor(connection);
             PrepareDatabaseWith(options);
 
             var parameters1 = new PostResourceParameters()
             {
-                RequiredTags = "<tag2><tag4>",
+                Tags = "<tag2><tag4>",
+                OrderBy = ""
             };
 
             var parameters2 = new PostResourceParameters()
             {
-                RequiredTags = "<unexisting-tag>",
+                Tags = "<unexisting-tag>",
+                OrderBy = ""
             };
 
             using var context = new BlogContext(options);
-            var target = new BlogRepository(context, tagsInString.Object);
-
+            var target = new BlogRepository(context, tagsInString.Object, mappingService.Object);
             #endregion Arrange
 
             #region Act
-
-            var result1 = target.GetAllPostsForAuthor(guids[1], parameters1).ToList();
-            var result2 = target.GetAllPostsForAuthor(guids[1], parameters2).ToList();
-
+            var result1 = target.GetPostsForAuthor(guids[1], parameters1).ToList();
+            var result2 = target.GetPostsForAuthor(guids[1], parameters2).ToList();
             #endregion Act
 
             #region Assert
-
             Assert.AreEqual(1, result1.Count());
             Assert.AreEqual(0, result2.Count());
             Assert.AreEqual("Post4", result1[0].Title);
-
             #endregion Assert
         }
 
@@ -108,34 +104,62 @@ namespace anBlogg.ApplicationTests
         public void GetAllPostsPaginatedTest()
         {
             #region Arrange
-
             var connection = SetConnection();
             var options = GetOptionsFor(connection);
             PrepareDatabaseWith(options);
 
             var parameters = new PostResourceParameters()
             {
-                PostsDisplayed = 2,
-                PageNumber = 2
+                PageSize = 2,
+                PageNumber = 2,
+                OrderBy = ""
             };
 
             using var context = new BlogContext(options);
-            var target = new BlogRepository(context, tagsInString.Object);
-
+            var target = new BlogRepository(context, tagsInString.Object, mappingService.Object);
             #endregion Arrange
 
             #region Act
-
             var result = target.GetPosts(parameters).ToList();
-            var result2 = target.GetPosts(new PostResourceParameters()).ToList();
-
             #endregion Act
 
             #region Assert
-
             Assert.AreEqual(2, result.Count());
-            Assert.AreEqual("Post2", result[0].Title);
+            #endregion Assert
+        }
 
+        [Test()]
+        public void GetAllPostsOrderedByDate()
+        {
+            #region Arrange
+            var connection = SetConnection();
+            var options = GetOptionsFor(connection);
+            PrepareDatabaseWith(options);
+
+            var parameters1 = new PostResourceParameters()
+            {
+                OrderBy = "Date"
+            };
+
+            var parameters2 = new PostResourceParameters()
+            {
+                OrderBy = "Date desc"
+            };
+
+            using var context = new BlogContext(options);
+            var target = new BlogRepository(context, tagsInString.Object, mappingService.Object);
+            #endregion Arrange
+
+            #region Act
+            var result1 = target.GetPosts(parameters1).ToList();
+            var result2 = target.GetPosts(parameters2).ToList();
+            #endregion Act
+
+            #region Assert
+            Assert.AreEqual("Post4", result1[0].Title);
+            Assert.AreEqual("Post1", result1[3].Title); 
+            Assert.AreEqual("Post1", result2[0].Title);
+            Assert.AreEqual("Post4", result2[3].Title);
             #endregion Assert
         }
 
@@ -226,6 +250,14 @@ namespace anBlogg.ApplicationTests
 
             tagsInString.Setup(t => t.EnumerateWithBrackets("<unexisting-tag>"))
                 .Returns(new List<string>() { "<unexisting-tag>" });
+        }
+
+        private void SetupMappingService()
+        {
+            mappingService = new Mock<IPropertyMappingService>();
+            var propertyMappingValue = new PropertyMappingValue(new List<string>() { "Created" }, true);
+            var dictionary = new Dictionary<string, PropertyMappingValue> { { "Date", propertyMappingValue } };
+            mappingService.Setup(m => m.GetPropertyMapping<IPostOutputDto, Post>()).Returns(dictionary);
         }
     }
 }

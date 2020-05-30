@@ -36,7 +36,9 @@ namespace anBlogg.Infrastructure.Persistence
                 switch (entry.State)
                 {
                     case EntityState.Added:
-                        entry.Entity.Created = DateTime.Now;
+                        if (new DateTime(1, 1, 1, 0, 0, 0) >= entry.Entity.Created)
+                            entry.Entity.Created = DateTime.Now;
+                        entry.Entity.Modified = entry.Entity.Created;
                         break;
 
                     case EntityState.Modified:

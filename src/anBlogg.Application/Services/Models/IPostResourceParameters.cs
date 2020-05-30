@@ -2,8 +2,9 @@
 {
     public interface IPostResourceParameters
     {
+        string Tags { get; set; }
+        string OrderBy { get; set; }
         int PageNumber { get; set; }
-        int PostsDisplayed { get; set; }
-        string RequiredTags { get; set; }
+        int PageSize { get; set; }
     }
 }

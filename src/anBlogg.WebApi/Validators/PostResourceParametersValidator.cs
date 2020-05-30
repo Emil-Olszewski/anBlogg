@@ -7,8 +7,8 @@ namespace anBlogg.WebApi.Validators
     {
         public PostResourceParametersValidator()
         {
-            RuleFor(p => p.PostsDisplayed).LessThanOrEqualTo(Constants.MaxPostsOnPage);
-            RuleFor(p => p.PostsDisplayed).GreaterThan(0);
+            RuleFor(p => p.PageSize).LessThanOrEqualTo(Constants.MaxPageSize);
+            RuleFor(p => p.PageSize).GreaterThan(0);
             RuleFor(p => p.PageNumber).GreaterThan(0);
         }
     }

@@ -4,14 +4,17 @@ namespace anBlogg.WebApi.ResourceParameters
 {
     public class PostResourceParameters : IPostResourceParameters
     {
-        public int PageNumber { get; set; }
-        public int PostsDisplayed { get; set; }
-        public string RequiredTags { get; set; }
+        private readonly int maxPageSize = Constants.MaxPageSize;
+        private int pageSize = Constants.DefaultPageSize;
 
-        public PostResourceParameters()
+        public string Tags { get; set; }
+        public string OrderBy { get; set; } = Constants.DefaultPostsOrdering;
+        public int PageNumber { get; set; } = Constants.DefaultPageNumber;
+        public int PageSize
         {
-            PageNumber = 1;
-            PostsDisplayed = Constants.DefaultPostsOnPage;
+            get => pageSize;
+            set => pageSize = (value > maxPageSize) ? maxPageSize : value;
         }
+
     }
 }

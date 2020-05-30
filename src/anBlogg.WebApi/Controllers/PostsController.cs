@@ -39,7 +39,7 @@ namespace anBlogg.WebApi.Controllers
             if (blogRepository.AuthorNotExist(authorId))
                 return NotFound();
 
-            var postsFromRepo = blogRepository.GetAllPostsForAuthor(authorId, parameters);
+            var postsFromRepo = blogRepository.GetPostsForAuthor(authorId, parameters);
             var mappedPosts = mapper.Map<IEnumerable<PostOutputDto>>(postsFromRepo);
             return Ok(mappedPosts);
         }

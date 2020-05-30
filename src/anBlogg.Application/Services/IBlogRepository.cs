@@ -1,4 +1,5 @@
-﻿using anBlogg.Application.Services.Models;
+﻿using anBlogg.Application.Services.Helpers;
+using anBlogg.Application.Services.Models;
 using anBlogg.Domain.Entities;
 using System;
 using System.Collections.Generic;
@@ -7,9 +8,9 @@ namespace anBlogg.Application.Services
 {
     public interface IBlogRepository
     {
-        IEnumerable<Post> GetPosts(IPostResourceParameters parameters);
+        PagedList<Post> GetPosts(IPostResourceParameters parameters);
 
-        IEnumerable<Post> GetAllPostsForAuthor(Guid authorId, IPostResourceParameters parameters);
+        PagedList<Post> GetPostsForAuthor(Guid authorId, IPostResourceParameters parameters);
 
         Post GetPostForAuthor(Guid authorId, Guid postId);
 
@@ -25,12 +26,11 @@ namespace anBlogg.Application.Services
 
         bool AuthorNotExist(Guid id);
 
-        void SaveChanges();
-
-        object GetAuthor(Guid id);
+        Author GetAuthor(Guid id);
 
         int GetPostsNumberForAuthor(Guid id);
 
         int GetCommentsNumberForAuthor(Guid id);
+        void SaveChanges();
     }
 }
