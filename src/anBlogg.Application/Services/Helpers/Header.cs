@@ -1,0 +1,14 @@
+﻿namespace anBlogg.Application.Services.Helpers
+{
+    public class Header
+    {
+        public string Name { get; set; }
+        public string Value { get; set; }
+
+        public Header(string name, string value)
+        {
+            Name = name;
+            Value = value;
+        }
+    }
+}

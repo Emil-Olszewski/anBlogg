@@ -31,6 +31,7 @@ namespace anBlogg.Application.Services
         int GetPostsNumberForAuthor(Guid id);
 
         int GetCommentsNumberForAuthor(Guid id);
+
         void SaveChanges();
     }
 }

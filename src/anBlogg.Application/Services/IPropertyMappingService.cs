@@ -6,5 +6,7 @@ namespace anBlogg.Application.Services
     public interface IPropertyMappingService
     {
         Dictionary<string, PropertyMappingValue> GetPropertyMapping<TSource, TDestination>();
+
+        bool MappingNotDefinedFor<TSource, TDestination>(string fields);
     }
 }

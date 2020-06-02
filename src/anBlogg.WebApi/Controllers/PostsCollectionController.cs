@@ -1,15 +1,13 @@
 ﻿using anBlogg.Application.Services;
 using anBlogg.WebApi.Controllers.Common;
-using anBlogg.WebApi.Helpers;
 using anBlogg.WebApi.Models;
 using anBlogg.WebApi.ResourceParameters;
 using anBlogg.WebApi.Validators;
 using AutoMapper;
 using Microsoft.AspNetCore.Mvc;
-using System.Text.Json;
 using System.Collections.Generic;
-using anBlogg.Application.Services.Helpers;
 using anBlogg.Domain.Entities;
+using anBlogg.Application.Services.Models;
 
 namespace anBlogg.WebApi.Controllers
 {
@@ -17,11 +15,21 @@ namespace anBlogg.WebApi.Controllers
     [Route("api/posts")]
     public class PostsCollectionController : PostsControllerBase
     {
-        public PostsCollectionController(IMapper mapper, IBlogRepository blogRepository)
-            : base(mapper, blogRepository) { }
+        private readonly IPropertyMappingService mappingService;
+        private readonly IProperties properties;
+        private readonly IPagination pagination;
+
+        public PostsCollectionController(IMapper mapper, IBlogRepository blogRepository,
+            IPropertyMappingService mappingService, IProperties properties, IPagination pagination)
+            : base(mapper, blogRepository)
+        {
+            this.mappingService = mappingService;
+            this.properties = properties;
+            this.pagination = pagination;
+        }
 
         [HttpGet(Name = "GetPosts")]
-        public ActionResult<IEnumerable<PostOutputDto>> GetPosts
+        public ActionResult<IEnumerable<IPostOutputDto>> GetPosts
             ([FromQuery] PostResourceParameters parameters)
         {
             if (CantValidate(parameters))
@@ -29,65 +37,42 @@ namespace anBlogg.WebApi.Controllers
 
             var postsFromRepo = blogRepository.GetPosts(parameters);
 
-            var header = CreatePaginationHeader(postsFromRepo, parameters);
-            Response.Headers.Add(header.name, header.value);
-
+            var header = pagination.CreatePaginationHeader(postsFromRepo, parameters, Url);
+            Response.Headers.Add(header.Name, header.Value);
+            
             var mappedPosts = mapper.Map<IEnumerable<PostOutputDto>>(postsFromRepo);
-
-            return Ok(mappedPosts);
+            var shapedPosts = properties.ShapeData(mappedPosts, parameters.Fields);
+            return Ok(shapedPosts);
         }
 
         private bool CantValidate(PostResourceParameters input)
         {
+            var areParametersInvalid = AreWrongParametersTyped(input);
+            var areFieldsInvalid = AreWrongFieldsTyped(input.Fields);
+            var isOrderByInvalid = AreWrongOrderByTyped(input.OrderBy);
+
+            if (areParametersInvalid || areFieldsInvalid || isOrderByInvalid)
+                return true;
+
+            return false;
+        }
+
+        private bool AreWrongParametersTyped(PostResourceParameters parameters)
+        {
             return Validator.CantValidate
-                (new PostResourceParametersValidator(), input, ModelState);
+                (new PostResourceParametersValidator(), parameters, ModelState);
         }
 
-        private dynamic CreatePaginationHeader
-            (PagedList<Post> posts, PostResourceParameters parameters)
+        private bool AreWrongFieldsTyped(string fields)
         {
-            var previousPageLink = posts.HasPrevious ?
-                CreatePostsResourceUri(parameters, ResourceUriType.PreviousPage) : null;
-
-            var nextPageLink = posts.HasNext ?
-               CreatePostsResourceUri(parameters, ResourceUriType.NextPage) : null;
-
-            var paginationMetadata = new
-            {
-                totalCount = posts.TotalCount,
-                pageSize = posts.PageSize,
-                currentPage = posts.CurrentPage,
-                totalPages = posts.TotalPages,
-                previousPageLink,
-                nextPageLink
-            };
-
-            var serializedMetadata = JsonSerializer.Serialize(paginationMetadata);
-            return new { name = "X-Pagination", value = serializedMetadata };
+            return !string.IsNullOrWhiteSpace(fields) && 
+                properties.NotExistsIn<IPostOutputDto>(fields);
         }
 
-        private string CreatePostsResourceUri
-            (PostResourceParameters parameters, ResourceUriType type)
+        private bool AreWrongOrderByTyped(string orderBy)
         {
-            var valueToAdd = GetValueToAddDependingOn(type);
-            var resource = new
-            {
-                pageNumber = parameters.PageNumber + valueToAdd,
-                pageSize = parameters.PageSize,
-                tags = parameters.Tags
-            };
-
-            return Url.Link("GetPosts", resource);
+            return !string.IsNullOrWhiteSpace(orderBy) && mappingService
+                .MappingNotDefinedFor<IPostOutputDto, Post>(orderBy);
         }
-
-        private int GetValueToAddDependingOn(ResourceUriType type)
-        {
-            return type switch
-            {
-                ResourceUriType.PreviousPage => -1,
-                ResourceUriType.NextPage => 1,
-                _ => 0
-            };
-        } 
     }
 }

@@ -15,9 +15,5 @@ namespace anBlogg.WebApi.Controllers.Common
             this.mapper = mapper;
             this.blogRepository = blogRepository;
         }
-
-        protected void GetNumberOfCommentsFor(params PostOutputDto[] mappedPosts)
-        {
-        }
     }
 }

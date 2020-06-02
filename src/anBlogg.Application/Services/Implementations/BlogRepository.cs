@@ -15,35 +15,37 @@ namespace anBlogg.Application.Services.Implementations
         private readonly BlogContext context;
         private readonly ITagsInString tagsInString;
         private readonly IPropertyMappingService mappingService;
+        private readonly IQueryableSorter queryableSorter;
 
-        public BlogRepository(BlogContext context, 
-            ITagsInString tagsInString, IPropertyMappingService mappingService)
+        public BlogRepository(BlogContext context, ITagsInString tagsInString,
+            IPropertyMappingService mappingService, IQueryableSorter queryableSorter)
         {
             this.context = context;
             this.tagsInString = tagsInString;
             this.mappingService = mappingService;
+            this.queryableSorter = queryableSorter;
         }
 
         public PagedList<Post> GetPosts(IPostResourceParameters parameters)
         {
             IQueryable<Post> query = context.Posts;
-            return DevelopQuery(query, parameters);
+            return DevelopPostQuery(query, parameters);
         }
 
-        public PagedList<Post> GetPostsForAuthor(Guid authorId, 
-            IPostResourceParameters parameters)
+        public PagedList<Post> GetPostsForAuthor
+            (Guid authorId, IPostResourceParameters parameters)
         {
             IQueryable<Post> query = context.Posts.Where(p => p.AuthorId == authorId);
-            return DevelopQuery(query, parameters);
+            return DevelopPostQuery(query, parameters);
         }
 
-        private PagedList<Post> DevelopQuery(IQueryable<Post> query, 
-            IPostResourceParameters parameters)
+        private PagedList<Post> DevelopPostQuery
+            (IQueryable<Post> query, IPostResourceParameters parameters)
         {
             if (parameters.Tags != null)
                 query = ApplyTags(query, parameters.Tags);
 
-            if(!string.IsNullOrWhiteSpace(parameters.OrderBy))
+            if (!string.IsNullOrWhiteSpace(parameters.OrderBy))
                 query = ApplySorting(query, parameters.OrderBy);
 
             query = IncludeAuthorsAndComments(query).AsNoTracking();
@@ -65,7 +67,7 @@ namespace anBlogg.Application.Services.Implementations
         private IQueryable<Post> ApplySorting(IQueryable<Post> query, string orderBy)
         {
             var postMappingDictionary = mappingService.GetPropertyMapping<IPostOutputDto, Post>();
-            return query.ApplySort(orderBy, postMappingDictionary);
+            return queryableSorter.ApplySort(query, orderBy, postMappingDictionary);
         }
 
         private IQueryable<Post> IncludeAuthorsAndComments(IQueryable<Post> query)
@@ -75,7 +77,7 @@ namespace anBlogg.Application.Services.Implementations
             return query;
         }
 
-        public void DeletePost(Post post) => 
+        public void DeletePost(Post post) =>
             context.Posts.Remove(post);
 
         public Post GetPostForAuthor(Guid authorId, Guid postId)
@@ -85,7 +87,9 @@ namespace anBlogg.Application.Services.Implementations
                 .FirstOrDefault();
         }
 
-        public void UpdatePostForAuthor(Guid authorId, Guid postId) { }
+        public void UpdatePostForAuthor(Guid authorId, Guid postId)
+        {
+        }
 
         public void AddPostForAuthor(Guid authorId, Post post)
         {
@@ -93,7 +97,7 @@ namespace anBlogg.Application.Services.Implementations
             context.Posts.Add(post);
         }
 
-        public bool AuthorNotExist(Guid id) => 
+        public bool AuthorNotExist(Guid id) =>
             !context.Authors.Any(a => a.Id == id);
 
         public IEnumerable<Author> GetAllAuthors()
@@ -102,19 +106,19 @@ namespace anBlogg.Application.Services.Implementations
             return queryable;
         }
 
-        public IEnumerable<Comment> GetCommentsForAuthor(Guid id) => 
+        public IEnumerable<Comment> GetCommentsForAuthor(Guid id) =>
             context.Comments.Where(p => p.AuthorId == id).AsNoTracking();
 
-        public Author GetAuthor(Guid id) => 
+        public Author GetAuthor(Guid id) =>
             context.Authors.Find(id);
 
-        public int GetPostsNumberForAuthor(Guid id) => 
+        public int GetPostsNumberForAuthor(Guid id) =>
             context.Posts.Where(p => p.AuthorId == id).Count();
 
-        public int GetCommentsNumberForAuthor(Guid id) => 
+        public int GetCommentsNumberForAuthor(Guid id) =>
             context.Comments.Where(p => p.AuthorId == id).Count();
 
-        public void SaveChanges() => 
+        public void SaveChanges() =>
             context.SaveChanges();
     }
 }

@@ -10,6 +10,9 @@ namespace anBlogg.Application
         {
             services.AddTransient<IBlogRepository, BlogRepository>();
             services.AddTransient<IPropertyMappingService, PropertyMappingService>();
+            services.AddTransient<IProperties, Properties>();
+            services.AddTransient<IQueryableSorter, QueryableSorter>();
+            services.AddTransient<IPagination, Pagination>();
             return services;
         }
     }

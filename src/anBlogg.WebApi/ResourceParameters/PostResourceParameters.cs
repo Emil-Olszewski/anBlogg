@@ -1,20 +1,15 @@
 ﻿using anBlogg.Application.Services.Models;
+using anBlogg.WebApi.ResourceParameters.Common;
 
 namespace anBlogg.WebApi.ResourceParameters
 {
-    public class PostResourceParameters : IPostResourceParameters
+    public class PostResourceParameters : ResourceParametersBase, IPostResourceParameters
     {
-        private readonly int maxPageSize = Constants.MaxPageSize;
-        private int pageSize = Constants.DefaultPageSize;
-
         public string Tags { get; set; }
-        public string OrderBy { get; set; } = Constants.DefaultPostsOrdering;
-        public int PageNumber { get; set; } = Constants.DefaultPageNumber;
-        public int PageSize
-        {
-            get => pageSize;
-            set => pageSize = (value > maxPageSize) ? maxPageSize : value;
-        }
 
+        public PostResourceParameters()
+        {
+            OrderBy = Constants.DefaultPostsOrdering;
+        }
     }
 }

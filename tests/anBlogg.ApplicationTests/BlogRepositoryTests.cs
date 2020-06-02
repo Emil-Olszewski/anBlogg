@@ -25,6 +25,7 @@ namespace anBlogg.ApplicationTests
         private List<Author> authors;
         private Mock<ITagsInString> tagsInString;
         private Mock<IPropertyMappingService> mappingService;
+        private Mock<IQueryableSorter> queryableSorter;
 
         public BlogRepositoryTests()
         {
@@ -33,6 +34,7 @@ namespace anBlogg.ApplicationTests
             PopulateAuthors();
             SetupTagsInString();
             SetupMappingService();
+            SetupQueryableSorter();
         }
 
         [Test()]
@@ -50,7 +52,8 @@ namespace anBlogg.ApplicationTests
             };
 
             using var context = new BlogContext(options);
-            var target = new BlogRepository(context, tagsInString.Object, mappingService.Object);
+            var target = new BlogRepository(context, tagsInString.Object, 
+                mappingService.Object, queryableSorter.Object);
             #endregion Arrange
 
             #region Act
@@ -85,7 +88,8 @@ namespace anBlogg.ApplicationTests
             };
 
             using var context = new BlogContext(options);
-            var target = new BlogRepository(context, tagsInString.Object, mappingService.Object);
+            var target = new BlogRepository(context, tagsInString.Object, 
+                mappingService.Object, queryableSorter.Object);
             #endregion Arrange
 
             #region Act
@@ -116,7 +120,8 @@ namespace anBlogg.ApplicationTests
             };
 
             using var context = new BlogContext(options);
-            var target = new BlogRepository(context, tagsInString.Object, mappingService.Object);
+            var target = new BlogRepository(context, tagsInString.Object, 
+                mappingService.Object, queryableSorter.Object);
             #endregion Arrange
 
             #region Act
@@ -125,41 +130,6 @@ namespace anBlogg.ApplicationTests
 
             #region Assert
             Assert.AreEqual(2, result.Count());
-            #endregion Assert
-        }
-
-        [Test()]
-        public void GetAllPostsOrderedByDate()
-        {
-            #region Arrange
-            var connection = SetConnection();
-            var options = GetOptionsFor(connection);
-            PrepareDatabaseWith(options);
-
-            var parameters1 = new PostResourceParameters()
-            {
-                OrderBy = "Date"
-            };
-
-            var parameters2 = new PostResourceParameters()
-            {
-                OrderBy = "Date desc"
-            };
-
-            using var context = new BlogContext(options);
-            var target = new BlogRepository(context, tagsInString.Object, mappingService.Object);
-            #endregion Arrange
-
-            #region Act
-            var result1 = target.GetPosts(parameters1).ToList();
-            var result2 = target.GetPosts(parameters2).ToList();
-            #endregion Act
-
-            #region Assert
-            Assert.AreEqual("Post4", result1[0].Title);
-            Assert.AreEqual("Post1", result1[3].Title); 
-            Assert.AreEqual("Post1", result2[0].Title);
-            Assert.AreEqual("Post4", result2[3].Title);
             #endregion Assert
         }
 
@@ -258,6 +228,11 @@ namespace anBlogg.ApplicationTests
             var propertyMappingValue = new PropertyMappingValue(new List<string>() { "Created" }, true);
             var dictionary = new Dictionary<string, PropertyMappingValue> { { "Date", propertyMappingValue } };
             mappingService.Setup(m => m.GetPropertyMapping<IPostOutputDto, Post>()).Returns(dictionary);
+        }
+
+        private void SetupQueryableSorter()
+        {
+            queryableSorter = new Mock<IQueryableSorter>();
         }
     }
 }
