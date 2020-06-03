@@ -18,16 +18,16 @@ namespace anBlogg.WebApi
             configurationRoot = configurationBuilder.Build();
         }
 
-        public static string DefaultPostsOrdering => 
+        public static string DefaultPostsOrdering =>
             configurationRoot["WebConfig:defaultPostsOrdering"];
 
-        public static int DefaultPageNumber => 
+        public static int DefaultPageNumber =>
             int.Parse(configurationRoot["WebConfig:defaultPageNumber"]);
 
-        public static int MaxPageSize => 
+        public static int MaxPageSize =>
             int.Parse(configurationRoot["WebConfig:maxPageSize"]);
 
-        public static int DefaultPageSize => 
+        public static int DefaultPageSize =>
             int.Parse(configurationRoot["WebConfig:defaultPageSize"]);
     }
 }

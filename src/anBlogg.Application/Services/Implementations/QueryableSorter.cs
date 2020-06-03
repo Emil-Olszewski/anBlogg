@@ -25,7 +25,7 @@ namespace anBlogg.Application.Services.Implementations
         {
             var orderInstruction = string.Empty;
             var propertyParameters = properties
-                .GetPropertiesNameWithArgumentsFrom(unseparatedParameters);
+                .GetPropertiesNamesWithArgumentsFrom(unseparatedParameters);
 
             foreach (var parameter in propertyParameters)
                 orderInstruction = BuiltOrderInstruction

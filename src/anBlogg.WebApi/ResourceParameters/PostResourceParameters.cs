@@ -1,9 +1,8 @@
 ﻿using anBlogg.Application.Services.Models;
-using anBlogg.WebApi.ResourceParameters.Common;
 
 namespace anBlogg.WebApi.ResourceParameters
 {
-    public class PostResourceParameters : ResourceParametersBase, IPostResourceParameters
+    public class PostResourceParameters : Common.ResourceParameters, IPostResourceParameters
     {
         public string Tags { get; set; }
 

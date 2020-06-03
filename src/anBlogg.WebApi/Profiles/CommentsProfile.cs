@@ -1,6 +1,5 @@
 ﻿using anBlogg.Application.Services.Models;
 using anBlogg.Domain.Entities;
-using anBlogg.WebApi.Models;
 using AutoMapper;
 
 namespace anBlogg.WebApi.Profiles

@@ -103,7 +103,7 @@ namespace anBlogg.Application.Services.Implementations
             return noAdditionalArguments ? parameter : parameter.Remove(indexOfFirstSpace);
         }
 
-        public IEnumerable<PropertyParameter> GetPropertiesNameWithArgumentsFrom
+        public IEnumerable<PropertyParameter> GetPropertiesNamesWithArgumentsFrom
             (string unseparatedParameters)
         {
             var parameters = PrepareParameters(unseparatedParameters);

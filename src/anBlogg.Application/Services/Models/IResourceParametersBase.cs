@@ -1,6 +1,6 @@
 ﻿namespace anBlogg.Application.Services.Models
 {
-    public interface IResourceParametersBase
+    public interface IResourceParameters
     {
         string Fields { get; set; }
         string OrderBy { get; set; }

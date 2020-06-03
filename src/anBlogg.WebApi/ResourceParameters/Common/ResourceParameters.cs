@@ -2,7 +2,7 @@
 
 namespace anBlogg.WebApi.ResourceParameters.Common
 {
-    public abstract class ResourceParametersBase : IResourceParametersBase
+    public abstract class ResourceParameters : IResourceParameters
     {
         protected readonly int maxPageSize = Constants.MaxPageSize;
         protected int pageSize = Constants.DefaultPageSize;
@@ -10,6 +10,7 @@ namespace anBlogg.WebApi.ResourceParameters.Common
         public string Fields { get; set; }
         public string OrderBy { get; set; }
         public int PageNumber { get; set; } = Constants.DefaultPageNumber;
+
         public int PageSize
         {
             get => pageSize;

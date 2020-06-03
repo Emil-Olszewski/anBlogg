@@ -41,6 +41,7 @@ namespace anBlogg.ApplicationTests
         public void GetAllPostWithRequiredTagsTest()
         {
             #region Arrange
+
             var connection = SetConnection();
             var options = GetOptionsFor(connection);
             PrepareDatabaseWith(options);
@@ -52,18 +53,23 @@ namespace anBlogg.ApplicationTests
             };
 
             using var context = new BlogContext(options);
-            var target = new BlogRepository(context, tagsInString.Object, 
+            var target = new BlogRepository(context, tagsInString.Object,
                 mappingService.Object, queryableSorter.Object);
+
             #endregion Arrange
 
             #region Act
+
             var result = target.GetPosts(parameters).ToList();
+
             #endregion Act
 
             #region Assert
+
             Assert.AreEqual(2, result.Count());
             Assert.IsNotNull(result.Find(r => r.Title == "Post3"));
             Assert.IsNotNull(result.Find(r => r.Title == "Post1"));
+
             #endregion Assert
         }
 
@@ -71,6 +77,7 @@ namespace anBlogg.ApplicationTests
         public void GetAllPostsForAuthorWithRequiredTagsTest()
         {
             #region Arrange
+
             var connection = SetConnection();
             var options = GetOptionsFor(connection);
             PrepareDatabaseWith(options);
@@ -88,19 +95,24 @@ namespace anBlogg.ApplicationTests
             };
 
             using var context = new BlogContext(options);
-            var target = new BlogRepository(context, tagsInString.Object, 
+            var target = new BlogRepository(context, tagsInString.Object,
                 mappingService.Object, queryableSorter.Object);
+
             #endregion Arrange
 
             #region Act
+
             var result1 = target.GetPostsForAuthor(guids[1], parameters1).ToList();
             var result2 = target.GetPostsForAuthor(guids[1], parameters2).ToList();
+
             #endregion Act
 
             #region Assert
+
             Assert.AreEqual(1, result1.Count());
             Assert.AreEqual(0, result2.Count());
             Assert.AreEqual("Post4", result1[0].Title);
+
             #endregion Assert
         }
 
@@ -108,6 +120,7 @@ namespace anBlogg.ApplicationTests
         public void GetAllPostsPaginatedTest()
         {
             #region Arrange
+
             var connection = SetConnection();
             var options = GetOptionsFor(connection);
             PrepareDatabaseWith(options);
@@ -120,16 +133,21 @@ namespace anBlogg.ApplicationTests
             };
 
             using var context = new BlogContext(options);
-            var target = new BlogRepository(context, tagsInString.Object, 
+            var target = new BlogRepository(context, tagsInString.Object,
                 mappingService.Object, queryableSorter.Object);
+
             #endregion Arrange
 
             #region Act
+
             var result = target.GetPosts(parameters).ToList();
+
             #endregion Act
 
             #region Assert
+
             Assert.AreEqual(2, result.Count());
+
             #endregion Assert
         }
 
@@ -230,9 +248,7 @@ namespace anBlogg.ApplicationTests
             mappingService.Setup(m => m.GetPropertyMapping<IPostOutputDto, Post>()).Returns(dictionary);
         }
 
-        private void SetupQueryableSorter()
-        {
+        private void SetupQueryableSorter() =>
             queryableSorter = new Mock<IQueryableSorter>();
-        }
     }
 }

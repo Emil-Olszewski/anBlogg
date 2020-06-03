@@ -6,7 +6,7 @@ namespace anBlogg.Application.Services
 {
     public interface IPagination
     {
-        Header CreatePaginationHeader<T>(PagedList<T> elements, 
-            IResourceParametersBase parameters, IUrlHelper url);
+        Header CreateHeader<T>(PagedList<T> elements,
+            IResourceParameters parameters, IUrlHelper url);
     }
 }

@@ -34,7 +34,7 @@ namespace anBlogg.Application.Services.Implementations
         }
 
         public bool MappingNotDefinedFor<TSource, TDestination>(string unseparatedParameters)
-        {          
+        {
             var propertyMapping = GetPropertyMapping<TSource, TDestination>();
             var propertiesNames = properties.GetPropertiesNamesFrom(unseparatedParameters);
 

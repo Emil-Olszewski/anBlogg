@@ -1,6 +1,6 @@
 {
   "WebConfig": {
-    "defaultPostsOrdering":  "Date",
+    "defaultPostsOrdering": "Date",
     "defaultPageNumber": 1,
     "maxPageSize": 25,
     "defaultPageSize": 10
