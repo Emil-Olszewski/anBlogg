@@ -103,7 +103,7 @@ namespace anBlogg.Application.Services.Implementations
             return noAdditionalArguments ? parameter : parameter.Remove(indexOfFirstSpace);
         }
 
-        public IEnumerable<PropertyParameter> GetPropertiesNamesWithArgumentsFrom
+        public IEnumerable<ArguedProperty> GetPropertiesNamesWithArgumentsFrom
             (string unseparatedParameters)
         {
             var parameters = PrepareParameters(unseparatedParameters);
@@ -111,11 +111,11 @@ namespace anBlogg.Application.Services.Implementations
                 yield return SeparateArgumentFromPropertyName(parameter);
         }
 
-        private PropertyParameter SeparateArgumentFromPropertyName(string parameter)
+        private ArguedProperty SeparateArgumentFromPropertyName(string parameter)
         {
             var splitted = parameter.Split(' ');
             var argument = splitted.Count() > 1 ? splitted[1] : string.Empty;
-            return new PropertyParameter(splitted[0], argument);
+            return new ArguedProperty(splitted[0], argument);
         }
 
         private IEnumerable<string> PrepareParameters(string unseparatedParameters)

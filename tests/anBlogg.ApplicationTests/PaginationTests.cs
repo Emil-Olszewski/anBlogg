@@ -36,6 +36,7 @@ namespace anBlogg.ApplicationTests
             #region Arrange
 
             var elements = new List<string>() { "1", "2", "3" }.AsQueryable();
+
             var pagedList = PagedList<string>.Create(elements, 2, 1);
             var parameters = new PostResourceParameters();
 
@@ -47,7 +48,7 @@ namespace anBlogg.ApplicationTests
 
             #region Act
 
-            var result = target.CreateHeader(pagedList, parameters, urlHelper.Object);
+            var result = target.CreateHeader(pagedList, parameters, new UriResource(urlHelper.Object));
             var deserialized = JsonSerializer
                 .Deserialize<ReturnedMetadata>(result.Value, options);
 

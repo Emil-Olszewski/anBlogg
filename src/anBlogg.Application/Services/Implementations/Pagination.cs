@@ -9,20 +9,18 @@ namespace anBlogg.Application.Services.Implementations
     {
         private readonly IProperties properties;
         private IResourceParameters parameters;
-        private IUrlHelper url;
+        private UriResource uriResource;
         private string previousPageLink;
         private string nextPageLink;
 
-        public Pagination(IProperties properties)
-        {
+        public Pagination(IProperties properties) => 
             this.properties = properties;
-        }
 
         public Header CreateHeader<T>(PagedList<T> elements,
-            IResourceParameters parameters, IUrlHelper url)
+            IResourceParameters parameters, UriResource uriResource)
         {
             this.parameters = parameters;
-            this.url = url;
+            this.uriResource = uriResource;
 
             CreatePageLinks(elements);
 
@@ -36,7 +34,9 @@ namespace anBlogg.Application.Services.Implementations
 
         private void CreatePageLinks<T>(PagedList<T> elements)
         {
-            var methodName = GetExpectedGetMethodNameFor(elements[0]);
+            var methodName = NeedsToDeduceName() ? 
+                DeduceGetMethodNameFor(elements[0]) : uriResource.GetMethodName;
+
             previousPageLink = elements.HasPrevious ?
                 CreateResourceUri(ResourceUriType.PreviousPage, methodName) : null;
 
@@ -44,11 +44,14 @@ namespace anBlogg.Application.Services.Implementations
                CreateResourceUri(ResourceUriType.NextPage, methodName) : null;
         }
 
-        private string GetExpectedGetMethodNameFor(object element)
+        private bool NeedsToDeduceName() =>
+            string.IsNullOrWhiteSpace(uriResource.GetMethodName);
+
+        private string DeduceGetMethodNameFor(object element)
         {
             var typeNameWithNamespaces = element.GetType().ToString();
             var splitted = typeNameWithNamespaces.Split('.');
-            var typeName = splitted[splitted.Length - 1];
+            var typeName = splitted[^1];
             return "Get" + typeName + "s";
         }
 
@@ -57,7 +60,7 @@ namespace anBlogg.Application.Services.Implementations
             var resource = properties.CreateDynamicResourceFrom(parameters);
             ((dynamic)resource).PageNumber += GetValueToAddDependingOn(type);
 
-            return url.Link(methodName, resource);
+            return uriResource.UrlHelper.Link(methodName, resource);
         }
 
         private int GetValueToAddDependingOn(ResourceUriType type)

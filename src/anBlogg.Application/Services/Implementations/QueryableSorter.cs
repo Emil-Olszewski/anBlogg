@@ -24,17 +24,17 @@ namespace anBlogg.Application.Services.Implementations
            (string unseparatedParameters, Dictionary<string, PropertyMappingValue> mappingDictionary)
         {
             var orderInstruction = string.Empty;
-            var propertyParameters = properties
+            var arguedProperties = properties
                 .GetPropertiesNamesWithArgumentsFrom(unseparatedParameters);
 
-            foreach (var parameter in propertyParameters)
+            foreach (var property in arguedProperties)
                 orderInstruction = BuiltOrderInstruction
-                    (orderInstruction, parameter, mappingDictionary);
+                    (orderInstruction, property, mappingDictionary);
 
             return orderInstruction;
         }
 
-        private static string BuiltOrderInstruction(string orderInstruction, PropertyParameter parameter,
+        private static string BuiltOrderInstruction(string orderInstruction, ArguedProperty parameter,
            Dictionary<string, PropertyMappingValue> mappingDictionary)
         {
             var isOrderDescending = parameter.Argument == "desc";

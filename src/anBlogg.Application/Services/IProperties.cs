@@ -13,7 +13,7 @@ public interface IProperties
 
     IEnumerable<string> GetPropertiesNamesFrom(string unseparatedParameters);
 
-    IEnumerable<PropertyParameter> GetPropertiesNamesWithArgumentsFrom
+    IEnumerable<ArguedProperty> GetPropertiesNamesWithArgumentsFrom
         (string unseparatedParameters);
 
     ExpandoObject CreateDynamicResourceFrom<T>(T source);

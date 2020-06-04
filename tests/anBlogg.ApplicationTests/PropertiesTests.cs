@@ -131,11 +131,11 @@ namespace anBlogg.ApplicationTests
 
             #region Assert
 
-            var expected = new List<PropertyParameter>()
+            var expected = new List<ArguedProperty>()
             {
-                new PropertyParameter("name", "desc"),
-                new PropertyParameter("age"),
-                new PropertyParameter("nationality", "asc")
+                new ArguedProperty("name", "desc"),
+                new ArguedProperty("age"),
+                new ArguedProperty("nationality", "asc")
             };
 
             Assert.AreEqual(3, result.Count());

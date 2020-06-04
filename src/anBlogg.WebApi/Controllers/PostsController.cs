@@ -1,4 +1,5 @@
 ﻿using anBlogg.Application.Services;
+using anBlogg.Application.Services.Helpers;
 using anBlogg.Domain.Entities;
 using anBlogg.WebApi.Controllers.Common;
 using anBlogg.WebApi.Models;
@@ -21,8 +22,10 @@ namespace anBlogg.WebApi.Controllers
         private Guid currentAuthorId;
         private Guid currentPostId;
 
-        public PostsController(IMapper mapper, IBlogRepository blogRepository)
-            : base(mapper, blogRepository) { }
+        public PostsController(IMapper mapper, IBlogRepository blogRepository,
+            IPropertyMappingService mappingService, IProperties properties, IPagination pagination)
+            : base(mapper, blogRepository, mappingService, properties, pagination)
+        { }
 
         [HttpOptions]
         public IActionResult GetPostOptions()
@@ -31,7 +34,7 @@ namespace anBlogg.WebApi.Controllers
             return Ok();
         }
 
-        [HttpGet()]
+        [HttpGet(Name = "GetPostsForAuthor")]
         [HttpHead]
         public ActionResult<IEnumerable<PostOutputDto>> GetPostsForAuthor
             (Guid authorId, [FromQuery] PostResourceParameters parameters)
@@ -39,12 +42,21 @@ namespace anBlogg.WebApi.Controllers
             if (blogRepository.AuthorNotExist(authorId))
                 return NotFound();
 
+            if (CantValidate(parameters))
+                return ValidationProblem(ModelState);
+
             var postsFromRepo = blogRepository.GetPostsForAuthor(authorId, parameters);
+
+            var header = pagination.CreateHeader
+                (postsFromRepo, parameters, new UriResource(Url, "GetPostsForAuthor"));
+            Response.Headers.Add(header.Name, header.Value);
+
             var mappedPosts = mapper.Map<IEnumerable<PostOutputDto>>(postsFromRepo);
-            return Ok(mappedPosts);
+            var shapedPosts = properties.ShapeData(mappedPosts, parameters.Fields);
+            return Ok(shapedPosts);
         }
 
-        [HttpGet("{postId}", Name = "GetPostForAuthor")]
+        [HttpGet("{postId}", Name = "GetPost")]
         public ActionResult<PostOutputDto> GetPostForAuthor(Guid authorId, Guid postId)
         {
             if (blogRepository.AuthorNotExist(authorId))
@@ -57,6 +69,7 @@ namespace anBlogg.WebApi.Controllers
             var mappedPost = mapper.Map<PostOutputDto>(postFromRepo);
             return Ok(mappedPost);
         }
+
 
         [HttpPost()]
         public IActionResult AddPostForAuthor(Guid authorId, PostInputDto postToAdd)
@@ -122,7 +135,7 @@ namespace anBlogg.WebApi.Controllers
             blogRepository.SaveChanges();
 
             var postToReturn = mapper.Map<PostOutputDto>(postToAdd);
-            return CreatedAtRoute("GetPostForAuthor",
+            return CreatedAtRoute("GetPost",
                 new { authorId = currentAuthorId, postId = postToReturn.Id }, postToReturn);
         }
 
