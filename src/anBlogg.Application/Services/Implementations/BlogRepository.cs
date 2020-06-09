@@ -2,7 +2,6 @@
 using anBlogg.Application.Services.Models;
 using anBlogg.Domain.Entities;
 using anBlogg.Domain.Services;
-using anBlogg.Infrastructure.Persistence;
 using Microsoft.EntityFrameworkCore;
 using System;
 using System.Collections.Generic;
@@ -12,12 +11,12 @@ namespace anBlogg.Application.Services.Implementations
 {
     public class BlogRepository : IBlogRepository
     {
-        private readonly BlogContext context;
+        private readonly IBlogContext context;
         private readonly ITagsInString tagsInString;
         private readonly IPropertyMappingService mappingService;
         private readonly IQueryableSorter queryableSorter;
 
-        public BlogRepository(BlogContext context, ITagsInString tagsInString,
+        public BlogRepository(IBlogContext context, ITagsInString tagsInString,
             IPropertyMappingService mappingService, IQueryableSorter queryableSorter)
         {
             this.context = context;
@@ -26,20 +25,29 @@ namespace anBlogg.Application.Services.Implementations
             this.queryableSorter = queryableSorter;
         }
 
+        public PagedList<Author> GetAllAuthors(IResourceParameters parameters)
+        {
+            var authors = context.Authors.AsNoTracking();
+            return PagedList<Author>.Create(authors, parameters.PageNumber, parameters.PageSize);
+        }
+
+        public Author GetAuthor(Guid id) =>
+            context.Authors.Find(id);
+
         public PagedList<Post> GetPosts(IPostResourceParameters parameters)
         {
             IQueryable<Post> query = context.Posts;
-            return DevelopPostQuery(query, parameters);
+            return DevelopPostsQuery(query, parameters);
         }
 
         public PagedList<Post> GetPostsForAuthor
             (Guid authorId, IPostResourceParameters parameters)
         {
             IQueryable<Post> query = context.Posts.Where(p => p.AuthorId == authorId);
-            return DevelopPostQuery(query, parameters);
+            return DevelopPostsQuery(query, parameters);
         }
 
-        private PagedList<Post> DevelopPostQuery
+        private PagedList<Post> DevelopPostsQuery
             (IQueryable<Post> query, IPostResourceParameters parameters)
         {
             if (parameters.Tags != null)
@@ -48,7 +56,9 @@ namespace anBlogg.Application.Services.Implementations
             if (!string.IsNullOrWhiteSpace(parameters.OrderBy))
                 query = ApplySorting(query, parameters.OrderBy);
 
-            query = IncludeAuthorsAndComments(query).AsNoTracking();
+            query = IncludeAuthorsAndComments(query);
+            query = query.AsNoTracking();
+
             return PagedList<Post>.Create(query, parameters.PageNumber, parameters.PageSize);
         }
 
@@ -70,25 +80,18 @@ namespace anBlogg.Application.Services.Implementations
             return queryableSorter.ApplySort(query, orderBy, postMappingDictionary);
         }
 
+        public Post GetPostForAuthor(Guid authorId, Guid postId)
+        {
+            var query = context.Posts.Where(p => p.AuthorId == authorId && p.Id == postId);
+            query = IncludeAuthorsAndComments(query);
+            return query.FirstOrDefault();
+        }
+
         private IQueryable<Post> IncludeAuthorsAndComments(IQueryable<Post> query)
         {
             query = query.Include(c => c.Author);
             query = query.Include(c => c.Comments).ThenInclude(c => c.Author);
             return query;
-        }
-
-        public void DeletePost(Post post) =>
-            context.Posts.Remove(post);
-
-        public Post GetPostForAuthor(Guid authorId, Guid postId)
-        {
-            return context.Posts
-                .Where(p => p.AuthorId == authorId && p.Id == postId)
-                .FirstOrDefault();
-        }
-
-        public void UpdatePostForAuthor(Guid authorId, Guid postId)
-        {
         }
 
         public void AddPostForAuthor(Guid authorId, Post post)
@@ -97,26 +100,24 @@ namespace anBlogg.Application.Services.Implementations
             context.Posts.Add(post);
         }
 
-        public bool AuthorNotExist(Guid id) =>
-            !context.Authors.Any(a => a.Id == id);
-
-        public IEnumerable<Author> GetAllAuthors()
+        public void UpdatePostForAuthor(Guid authorId, Guid postId)
         {
-            IQueryable<Author> queryable = context.Authors.AsNoTracking();
-            return queryable;
         }
+
+        public void DeletePost(Post post) =>
+            context.Posts.Remove(post);
 
         public IEnumerable<Comment> GetCommentsForAuthor(Guid id) =>
             context.Comments.Where(p => p.AuthorId == id).AsNoTracking();
-
-        public Author GetAuthor(Guid id) =>
-            context.Authors.Find(id);
 
         public int GetPostsNumberForAuthor(Guid id) =>
             context.Posts.Where(p => p.AuthorId == id).Count();
 
         public int GetCommentsNumberForAuthor(Guid id) =>
             context.Comments.Where(p => p.AuthorId == id).Count();
+
+        public bool AuthorNotExist(Guid id) =>
+            !context.Authors.Any(a => a.Id == id);
 
         public void SaveChanges() =>
             context.SaveChanges();

@@ -1,4 +1,6 @@
 using anBlogg.Application;
+using anBlogg.Application.Services;
+using anBlogg.Domain;
 using anBlogg.Infrastructure;
 using anBlogg.Infrastructure.Persistence;
 using AutoMapper;
@@ -6,7 +8,7 @@ using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Cors.Infrastructure;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.AspNetCore.Routing;
+using Microsoft.AspNetCore.Mvc.Formatters;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
@@ -14,6 +16,7 @@ using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using Newtonsoft.Json.Serialization;
 using System;
+using System.Linq;
 
 namespace anBlogg.WebApi
 {
@@ -30,7 +33,7 @@ namespace anBlogg.WebApi
 
         public void ConfigureServices(IServiceCollection services)
         {
-            services.AddDbContext<BlogContext>(SetupDbContext);
+            services.AddDbContext<IBlogContext, BlogContext>(SetupDbContext);
 
             void SetupDbContext(DbContextOptionsBuilder builder)
             {
@@ -64,6 +67,18 @@ namespace anBlogg.WebApi
             services.AddInfrastructure();
 
             services.AddAutoMapper(AppDomain.CurrentDomain.GetAssemblies());
+
+            services.Configure<MvcOptions>(ConfigureMvc);
+
+            static void ConfigureMvc(MvcOptions options)
+            {
+                var newtonsoftJsonOutputFormatter = options.OutputFormatters.
+                    OfType<NewtonsoftJsonOutputFormatter>().FirstOrDefault();
+
+                if (newtonsoftJsonOutputFormatter != null)
+                    foreach (var mediaType in Constants.MediaTypes)
+                        newtonsoftJsonOutputFormatter.SupportedMediaTypes.Add(mediaType);
+            }
         }
 
         public void Configure(IApplicationBuilder app, IWebHostEnvironment env)
@@ -79,18 +94,10 @@ namespace anBlogg.WebApi
 
             app.UseAuthorization();
 
-            app.UseEndpoints(SetupEndpoints);
-
-            static void SetupEndpoints(IEndpointRouteBuilder builder) =>
-                builder.MapControllers(); ;
+            app.UseEndpoints(builder => builder.MapControllers());
         }
 
-        private static ILoggerFactory CreateLogger()
-        {
-            return LoggerFactory.Create(SetupLoggerFactory);
-
-            static void SetupLoggerFactory(ILoggingBuilder builder) =>
-                builder.AddConsole();
-        }
+        private static ILoggerFactory CreateLogger() =>
+            LoggerFactory.Create(builder => builder.AddConsole());
     }
 }

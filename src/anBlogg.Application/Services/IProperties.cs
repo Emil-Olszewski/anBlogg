@@ -8,6 +8,9 @@ public interface IProperties
 
     bool ExistsIn<TSource>(string properties);
 
+    ExpandoObject ShapeSingleData<T>
+        (T source, string desirableProperties);
+
     IEnumerable<ExpandoObject> ShapeData<TSource>
         (IEnumerable<TSource> source, string desirableProperties);
 

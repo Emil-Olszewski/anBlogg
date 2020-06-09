@@ -1,4 +1,5 @@
-﻿using Microsoft.Extensions.DependencyInjection;
+﻿using anBlogg.Infrastructure.FluentValidation;
+using Microsoft.Extensions.DependencyInjection;
 
 namespace anBlogg.Infrastructure
 {
@@ -6,6 +7,7 @@ namespace anBlogg.Infrastructure
     {
         public static IServiceCollection AddInfrastructure(this IServiceCollection services)
         {
+            services.AddTransient<IValidator, Validator>();
             return services;
         }
     }

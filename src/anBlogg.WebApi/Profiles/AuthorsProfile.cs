@@ -13,6 +13,10 @@ namespace anBlogg.WebApi.Profiles
                 .ForMember(dest => dest.Score,
                 opt => opt.MapFrom(src => src.Score.Value));
 
+            CreateMap<Author, AuthorShortOutputDto>()
+                .ForMember(dest => dest.Score,
+                opt => opt.MapFrom(src => src.Score.Value));
+
             CreateMap<Author, AuthorOutputDto>()
                 .ForMember(dest => dest.Score, opt =>
                     opt.MapFrom(src => src.Score.Value))

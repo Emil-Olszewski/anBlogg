@@ -1,8 +1,9 @@
 ﻿using anBlogg.Application.Services.Models;
+using anBlogg.Domain;
 
-namespace anBlogg.WebApi.ResourceParameters.Common
+namespace anBlogg.WebApi.ResourceParameters
 {
-    public abstract class ResourceParameters : IResourceParameters
+    public class BasicResourceParameters : IResourceParameters
     {
         protected readonly int maxPageSize = Constants.MaxPageSize;
         protected int pageSize = Constants.DefaultPageSize;

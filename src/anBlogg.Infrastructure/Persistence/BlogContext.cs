@@ -1,4 +1,5 @@
-﻿using anBlogg.Domain.Common;
+﻿using anBlogg.Application.Services;
+using anBlogg.Domain.Common;
 using anBlogg.Domain.Entities;
 using anBlogg.Infrastructure.Persistence.Configurations;
 using Microsoft.EntityFrameworkCore;
@@ -6,7 +7,7 @@ using System;
 
 namespace anBlogg.Infrastructure.Persistence
 {
-    public class BlogContext : DbContext
+    public class BlogContext : DbContext, IBlogContext
     {
         public DbSet<Author> Authors { get; set; }
         public DbSet<Post> Posts { get; set; }

@@ -1,9 +1,10 @@
-﻿using anBlogg.WebApi.ResourceParameters;
+﻿using anBlogg.Application.Services.Models;
+using anBlogg.Domain;
 using FluentValidation;
 
-namespace anBlogg.WebApi.Validators
+namespace anBlogg.Infrastructure.FluentValidation.Validators
 {
-    public class PostResourceParametersValidator : AbstractValidator<PostResourceParameters>
+    public class PostResourceParametersValidator : ValidatorBase<IPostResourceParameters>
     {
         public PostResourceParametersValidator()
         {

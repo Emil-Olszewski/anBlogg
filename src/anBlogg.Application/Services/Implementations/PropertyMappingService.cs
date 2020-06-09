@@ -30,9 +30,7 @@ namespace anBlogg.Application.Services.Implementations
         public Dictionary<string, PropertyMappingValue> GetPropertyMapping<TSource, TDestination>()
         {
             var matchingMapping = propertyMappings.OfType<PropertyMapping<TSource, TDestination>>();
-            if (matchingMapping.Count() == 1)
-                return matchingMapping.First().MappingDictionary;
-            return null;
+            return matchingMapping.First().MappingDictionary;
         }
 
         public bool MappingNotDefinedFor<TSource, TDestination>(string unseparatedParameters)

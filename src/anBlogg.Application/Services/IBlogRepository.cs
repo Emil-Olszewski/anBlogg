@@ -20,7 +20,7 @@ namespace anBlogg.Application.Services
 
         void DeletePost(Post post);
 
-        IEnumerable<Author> GetAllAuthors();
+        PagedList<Author> GetAllAuthors(IResourceParameters parameters);
 
         IEnumerable<Comment> GetCommentsForAuthor(Guid authorId);
 

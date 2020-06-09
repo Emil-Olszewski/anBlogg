@@ -15,61 +15,43 @@ namespace anBlogg.ApplicationTests
     [TestFixture()]
     public class PaginationTests
     {
-        private class ReturnedMetadata
-        {
-            public int TotalCount { get; set; }
-            public int PageSize { get; set; }
-            public int CurrentPage { get; set; }
-            public int TotalPages { get; set; }
-            public string PreviousPageLink { get; set; }
-            public string NextPageLink { get; set; }
-        }
-
         private readonly ExpandoObject expandoObject = new ExpandoObject();
         private readonly Mock<IProperties> properties = new Mock<IProperties>();
         private readonly Mock<IUrlHelper> urlHelper = new Mock<IUrlHelper>();
         private readonly JsonSerializerOptions options = new JsonSerializerOptions();
 
         [Test()]
-        public void CreateHeaderTest()
+        public void CreatePagesLinksTest()
         {
             #region Arrange
-
             var elements = new List<string>() { "1", "2", "3" }.AsQueryable();
-
             var pagedList = PagedList<string>.Create(elements, 2, 1);
+            var target = new Pagination(properties.Object);
             var parameters = new PostResourceParameters();
 
-            var target = new Pagination(properties.Object);
-
             PrepareObjects();
-
-            #endregion Arrange
+            #endregion
 
             #region Act
-
-            var result = target.CreateHeader(pagedList, parameters, new UriResource(urlHelper.Object));
-            var deserialized = JsonSerializer
-                .Deserialize<ReturnedMetadata>(result.Value, options);
-
-            #endregion Act
+            var result = target.CreatePagesLinks(pagedList,
+                parameters, new UriResource(urlHelper.Object));
+            #endregion
 
             #region Assert
-
-            Assert.IsInstanceOf(typeof(Header), result);
-            Assert.AreEqual("GetStrings", deserialized.PreviousPageLink);
-
-            #endregion Assert
+            Assert.IsTrue(result.HasNext);
+            Assert.IsTrue(result.HasPrevious);
+            Assert.AreEqual("GetStrings", result.Next);
+            #endregion
         }
 
         private void PrepareObjects()
         {
-            properties.Setup(p => p.CreateDynamicResourceFrom(It.IsAny<IResourceParameters>()))
-                .Returns(expandoObject);
-
             urlHelper.Setup(u => u.Link(It.IsAny<string>(), It.IsAny<object>()))
                 .Returns((string x, object y) => x);
 
+            properties.Setup(p => p.CreateDynamicResourceFrom(It.IsAny<IResourceParameters>()))
+                .Returns(expandoObject);
+            
             expandoObject.TryAdd("PageNumber", 3);
 
             options.PropertyNameCaseInsensitive = true;

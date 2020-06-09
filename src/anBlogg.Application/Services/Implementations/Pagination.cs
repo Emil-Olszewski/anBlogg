@@ -1,6 +1,5 @@
 ﻿using anBlogg.Application.Services.Helpers;
-using anBlogg.Application.Services.Models;
-using Microsoft.AspNetCore.Mvc;
+using System;
 using System.Text.Json;
 
 namespace anBlogg.Application.Services.Implementations
@@ -8,59 +7,59 @@ namespace anBlogg.Application.Services.Implementations
     public class Pagination : IPagination
     {
         private readonly IProperties properties;
-        private IResourceParameters parameters;
-        private UriResource uriResource;
-        private string previousPageLink;
-        private string nextPageLink;
 
         public Pagination(IProperties properties) => 
             this.properties = properties;
 
-        public Header CreateHeader<T>(PagedList<T> elements,
-            IResourceParameters parameters, UriResource uriResource)
+        public Header CreateHeader<T>(PagedList<T> elements)
         {
-            this.parameters = parameters;
-            this.uriResource = uriResource;
-
-            CreatePageLinks(elements);
-
-            var paginationMetadata = CreateMetadata
-                (elements, previousPageLink, nextPageLink);
-
-            var serializedMetadata = JsonSerializer.Serialize(paginationMetadata);
+            var metadata = CreateMetadata(elements);
+            var serializedMetadata = JsonSerializer.Serialize(metadata);
 
             return new Header("X-Pagination", serializedMetadata);
         }
 
-        private void CreatePageLinks<T>(PagedList<T> elements)
+        private PaginationMetadata CreateMetadata<T>(PagedList<T> elements)
         {
-            var methodName = NeedsToDeduceName() ? 
-                DeduceGetMethodNameFor(elements[0]) : uriResource.GetMethodName;
-
-            previousPageLink = elements.HasPrevious ?
-                CreateResourceUri(ResourceUriType.PreviousPage, methodName) : null;
-
-            nextPageLink = elements.HasNext ?
-               CreateResourceUri(ResourceUriType.NextPage, methodName) : null;
+            return new PaginationMetadata
+            {
+                TotalCount = elements.TotalCount,
+                PageSize = elements.PageSize,
+                CurrentPage = elements.CurrentPage,
+                TotalPages = elements.TotalPages,
+            };
         }
 
-        private bool NeedsToDeduceName() =>
-            string.IsNullOrWhiteSpace(uriResource.GetMethodName);
-
-        private string DeduceGetMethodNameFor(object element)
+        public PagesLinks CreatePagesLinks<T1, T2>(PagedList<T1> elements, 
+            T2 parameters, UriResource uriResource)
         {
-            var typeNameWithNamespaces = element.GetType().ToString();
-            var splitted = typeNameWithNamespaces.Split('.');
-            var typeName = splitted[^1];
+            if (string.IsNullOrWhiteSpace(uriResource.GetMethodName))
+                uriResource.GetMethodName = DeduceGetMethodNameFor(typeof(T1));
+
+            var previousPageLink = elements.HasPrevious ?
+                CreateResourceUri(parameters, uriResource, ResourceUriType.PreviousPage) 
+                : null;
+
+            var nextPageLink = elements.HasNext ?
+               CreateResourceUri(parameters, uriResource, ResourceUriType.NextPage) 
+               : null;
+
+            return new PagesLinks(previousPageLink, nextPageLink);
+        }
+
+        private string DeduceGetMethodNameFor(Type element)
+        {
+            var typeName = element.Name;
             return "Get" + typeName + "s";
         }
 
-        private string CreateResourceUri(ResourceUriType type, string methodName)
+        public string CreateResourceUri<T>
+            (T source, UriResource uriResource, ResourceUriType type)
         {
-            var resource = properties.CreateDynamicResourceFrom(parameters);
+            var resource = properties.CreateDynamicResourceFrom(source);
             ((dynamic)resource).PageNumber += GetValueToAddDependingOn(type);
 
-            return uriResource.UrlHelper.Link(methodName, resource);
+            return uriResource.UrlHelper.Link(uriResource.GetMethodName, resource);
         }
 
         private int GetValueToAddDependingOn(ResourceUriType type)
@@ -69,21 +68,8 @@ namespace anBlogg.Application.Services.Implementations
             {
                 ResourceUriType.PreviousPage => -1,
                 ResourceUriType.NextPage => 1,
+                ResourceUriType.Current => 0,
                 _ => 0
-            };
-        }
-
-        private dynamic CreateMetadata<T>(PagedList<T> elements,
-            string previousPageLink, string nextPageLink)
-        {
-            return new
-            {
-                totalCount = elements.TotalCount,
-                pageSize = elements.PageSize,
-                currentPage = elements.CurrentPage,
-                totalPages = elements.TotalPages,
-                previousPageLink,
-                nextPageLink
             };
         }
     }

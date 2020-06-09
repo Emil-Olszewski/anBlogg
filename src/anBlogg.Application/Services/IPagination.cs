@@ -1,12 +1,15 @@
 ﻿using anBlogg.Application.Services.Helpers;
-using anBlogg.Application.Services.Models;
-using Microsoft.AspNetCore.Mvc;
 
 namespace anBlogg.Application.Services
 {
     public interface IPagination
     {
-        Header CreateHeader<T>(PagedList<T> elements,
-            IResourceParameters parameters, UriResource uriResource);
+        Header CreateHeader<T>(PagedList<T> elements);
+
+        PagesLinks CreatePagesLinks<T1, T2>(PagedList<T1> elements,
+            T2 parameters, UriResource uriResource);
+
+        string CreateResourceUri<T>
+            (T source, UriResource uriResource, ResourceUriType type);
     }
 }

@@ -3,6 +3,14 @@
     "defaultPostsOrdering": "Date",
     "defaultPageNumber": 1,
     "maxPageSize": 25,
-    "defaultPageSize": 10
+    "defaultPageSize": 10,
+    "MediaTypes": {
+      "root": "application/vnd.anblogg",
+      "main": ".hateoas+json",
+      "author-full": ".author.full+json",
+      "author-full-hateoas": ".author.full.hateoas+json",
+      "author-short": ".author.short+json",
+      "author-short-hateoas": ".author.short.hateoas+json"
+    }
   }
 }

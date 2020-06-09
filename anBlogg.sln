@@ -16,6 +16,9 @@ EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "anBlogg.ApplicationTests", "tests\anBlogg.ApplicationTests\anBlogg.ApplicationTests.csproj", "{666456F3-5D18-47CB-9D63-445874963D3B}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "anBlogg.Infrastructure", "src\anBlogg.Infrastructure\anBlogg.Infrastructure.csproj", "{9832B8C3-35DD-4476-B78F-F1CA51F50D44}"
+	ProjectSection(ProjectDependencies) = postProject
+		{9425A14F-FDE9-40AB-85B8-12BF76ED457E} = {9425A14F-FDE9-40AB-85B8-12BF76ED457E}
+	EndProjectSection
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "anBlogg.InfrastructureTests", "tests\anBlogg.InfrastructureTests\anBlogg.InfrastructureTests.csproj", "{88DAC5D4-49F2-423E-8AA4-9B59E62D77A5}"
 EndProject

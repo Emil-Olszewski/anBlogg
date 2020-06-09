@@ -8,12 +8,12 @@ namespace anBlogg.Application.Services.Implementations
 {
     public class Properties : IProperties
     {
-        public bool NotExistsIn<TSource>(string properties) =>
-           !ExistsIn<TSource>(properties);
+        public bool NotExistsIn<T>(string properties) =>
+           !ExistsIn<T>(properties);
 
-        public bool ExistsIn<TSource>(string properties)
+        public bool ExistsIn<T>(string properties)
         {
-            var propertiesInfos = GetAllProperties<TSource>();
+            var propertiesInfos = GetAllProperties<T>();
             var propertiesNames = GetPropertiesNamesFrom(properties);
 
             foreach (var searchedName in propertiesNames)
@@ -21,6 +21,13 @@ namespace anBlogg.Application.Services.Implementations
                     return false;
 
             return true;
+        }
+
+        public ExpandoObject ShapeSingleData<T>
+           (T source, string desirableProperties)
+        {
+            var propertiesInfos = GetPropertiesInfos<T>(desirableProperties);
+            return CreateNewObjectFromProperties(source, propertiesInfos);
         }
 
         public IEnumerable<ExpandoObject> ShapeData<T>
@@ -38,8 +45,8 @@ namespace anBlogg.Application.Services.Implementations
             return expandoObjects;
         }
 
-        private ExpandoObject CreateNewObjectFromProperties<TSource>
-          (TSource sourceObject, IEnumerable<PropertyInfo> propertiesInfos)
+        private ExpandoObject CreateNewObjectFromProperties<T>
+          (T sourceObject, IEnumerable<PropertyInfo> propertiesInfos)
         {
             var shapedData = new ExpandoObject();
             foreach (var propertyInfo in propertiesInfos)
@@ -52,36 +59,36 @@ namespace anBlogg.Application.Services.Implementations
             return shapedData;
         }
 
-        private List<PropertyInfo> GetPropertiesInfos<TSource>(string desirableProperties)
+        private List<PropertyInfo> GetPropertiesInfos<T>(string desirableProperties)
         {
             PropertyInfo[] propertiesInfo;
             if (string.IsNullOrWhiteSpace(desirableProperties))
-                propertiesInfo = GetAllProperties<TSource>();
+                propertiesInfo = GetAllProperties<T>();
             else
-                propertiesInfo = GetParticularProperties<TSource>(desirableProperties);
+                propertiesInfo = GetParticularProperties<T>(desirableProperties);
 
             return propertiesInfo.ToList();
         }
 
-        private PropertyInfo[] GetAllProperties<TSource>() =>
-           typeof(TSource).GetProperties(BindingFlags.Public | BindingFlags.Instance);
+        private PropertyInfo[] GetAllProperties<T>() =>
+           typeof(T).GetProperties(BindingFlags.Public | BindingFlags.Instance);
 
-        private PropertyInfo[] GetParticularProperties<TSource>
+        private PropertyInfo[] GetParticularProperties<T>
            (string unseparatedProperties)
         {
             var propertiesInfo = new List<PropertyInfo>();
             var propertiesNames = GetPropertiesNamesFrom(unseparatedProperties);
             foreach (var propertyName in propertiesNames)
             {
-                var propertyInfo = GetSingleProperty<TSource>(propertyName);
+                var propertyInfo = GetSingleProperty<T>(propertyName);
                 propertiesInfo.Add(propertyInfo);
             }
 
             return propertiesInfo.ToArray();
         }
 
-        private PropertyInfo GetSingleProperty<TSource>(string propertyName) =>
-           typeof(TSource).GetProperty(propertyName,
+        private PropertyInfo GetSingleProperty<T>(string propertyName) =>
+           typeof(T).GetProperty(propertyName,
                BindingFlags.IgnoreCase | BindingFlags.Public | BindingFlags.Instance);
 
         private bool PropertyNotExistsIn
