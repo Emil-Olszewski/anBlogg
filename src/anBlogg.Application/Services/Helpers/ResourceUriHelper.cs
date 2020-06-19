@@ -2,12 +2,12 @@
 
 namespace anBlogg.Application.Services.Helpers
 {
-    public class UriResource
+    public class ResourceUriHelper
     {
         public IUrlHelper UrlHelper { get; private set; }
         public string GetMethodName { get; set; }
 
-        public UriResource(IUrlHelper urlHelper, string getMethodName = "")
+        public ResourceUriHelper(IUrlHelper urlHelper, string getMethodName = "")
         {
             UrlHelper = urlHelper;
             GetMethodName = getMethodName;

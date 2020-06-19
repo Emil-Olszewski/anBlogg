@@ -26,7 +26,9 @@ namespace anBlogg.WebApi.Profiles
                 .ForMember(dest => dest.Author, opt =>
                     opt.MapFrom(src => src.Author))
                 .ForMember(dest => dest.Score, opt =>
-                    opt.MapFrom(src => src.Score.Value));
+                    opt.MapFrom(src => src.Score.Value))
+                .ForMember(dest => dest.CommentsNumber, opt =>
+                    opt.Ignore());
 
             CreateMap<Post, PostInputDto>()
                 .ForMember(dest => dest.Tags, opt =>

@@ -24,7 +24,7 @@ namespace anBlogg.Application.Services.Implementations
         }
 
         public ExpandoObject ShapeSingleData<T>
-           (T source, string desirableProperties)
+           (T source, string desirableProperties = "")
         {
             var propertiesInfos = GetPropertiesInfos<T>(desirableProperties);
             return CreateNewObjectFromProperties(source, propertiesInfos);

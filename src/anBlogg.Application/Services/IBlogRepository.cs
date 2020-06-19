@@ -8,6 +8,12 @@ namespace anBlogg.Application.Services
 {
     public interface IBlogRepository
     {
+        PagedList<Author> GetAllAuthors(IResourceParameters parameters);
+
+        Author GetAuthor(Guid id);
+
+        bool AuthorNotExist(Guid id);
+
         PagedList<Post> GetPosts(IPostResourceParameters parameters);
 
         PagedList<Post> GetPostsForAuthor(Guid authorId, IPostResourceParameters parameters);
@@ -16,21 +22,25 @@ namespace anBlogg.Application.Services
 
         void AddPostForAuthor(Guid authorId, Post post);
 
-        void UpdatePostForAuthor(Guid authorId, Guid postId);
-
         void DeletePost(Post post);
-
-        PagedList<Author> GetAllAuthors(IResourceParameters parameters);
-
-        IEnumerable<Comment> GetCommentsForAuthor(Guid authorId);
-
-        bool AuthorNotExist(Guid id);
-
-        Author GetAuthor(Guid id);
 
         int GetPostsNumberForAuthor(Guid id);
 
+        bool PostNotExistForAuthor(Guid authorId, Guid postId);
+
+        IEnumerable<Comment> GetCommentsForAuthor(Guid id);
+
+        PagedList<Comment> GetAllComentsForPost(Guid postId, IResourceParameters parameters);
+
+        Comment GetCommentForPost(Guid postId, Guid commentId);
+
+        void AddCommentForPost(Guid postId, Comment comment);
+
+        void DeleteComment(Comment comment);
+
         int GetCommentsNumberForAuthor(Guid id);
+
+        int GetCommentsNumberForPost(Guid id);
 
         void SaveChanges();
     }

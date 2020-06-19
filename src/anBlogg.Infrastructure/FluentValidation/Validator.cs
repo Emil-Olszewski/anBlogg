@@ -19,7 +19,8 @@ namespace anBlogg.Infrastructure.FluentValidation
             validators = new List<IValidatorBase>
             {
                 new PostResourceParametersValidator(),
-                new PostInputDtoValidator()
+                new PostInputDtoValidator(),
+                new CommentInputValidator()
             };
 
             this.properties = properties;
@@ -29,9 +30,11 @@ namespace anBlogg.Infrastructure.FluentValidation
         public bool DontMatchRules<T>(T input, ModelStateDictionary? modelState = null)
         {
             var validator = validators.OfType<ValidatorBase<T>>().FirstOrDefault();
-            var validationResult = validator?.Validate(input);
+            if (validator is null)
+                return false;
 
-            if (validator is null || validationResult.IsValid)
+            var validationResult = validator.Validate(input);
+            if (validationResult.IsValid)
                 return false;
 
             if (modelState != null)

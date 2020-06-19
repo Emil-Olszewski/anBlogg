@@ -45,8 +45,12 @@ namespace anBlogg.WebApi
             services.AddControllers(SetupControllers)
                 .AddNewtonsoftJson(SetupNewtonsoftJson);
 
-            static void SetupControllers(MvcOptions options) =>
+            static void SetupControllers(MvcOptions options)
+            {
                 options.ReturnHttpNotAcceptable = true;
+                options.CacheProfiles.Add("300SecondsCacheProfile",
+                    new CacheProfile() { Duration = 300 });
+            }
 
             static void SetupNewtonsoftJson(MvcNewtonsoftJsonOptions options) =>
                 options.SerializerSettings.ContractResolver =
@@ -87,6 +91,8 @@ namespace anBlogg.WebApi
                 app.UseDeveloperExceptionPage();
 
             app.UseHttpsRedirection();
+
+            app.UseResponseCaching();
 
             app.UseRouting();
 

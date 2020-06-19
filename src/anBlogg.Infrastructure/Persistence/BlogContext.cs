@@ -27,6 +27,7 @@ namespace anBlogg.Infrastructure.Persistence
             //modelBuilder.Entity<Post>().HasData(BlogContextSeeds.Posts);
             //modelBuilder.Entity<Post>().OwnsOne(p => p.Tags).HasData(BlogContextSeeds.Tags);
             //modelBuilder.Entity<Comment>().HasData(BlogContextSeeds.Comments);
+
             base.OnModelCreating(modelBuilder);
         }
 

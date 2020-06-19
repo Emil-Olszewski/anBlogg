@@ -1,10 +1,10 @@
 ﻿using anBlogg.Application.Services;
-using anBlogg.Application.Services.Helpers;
 using anBlogg.Application.Services.Models;
 using anBlogg.Domain.Entities;
 using anBlogg.Infrastructure.FluentValidation;
 using anBlogg.Infrastructure.FluentValidation.Models;
 using anBlogg.WebApi.Controllers.Common;
+using anBlogg.WebApi.Helpers;
 using anBlogg.WebApi.Models;
 using anBlogg.WebApi.ResourceParameters;
 using AutoMapper;
@@ -13,7 +13,6 @@ using Microsoft.AspNetCore.JsonPatch;
 using Microsoft.AspNetCore.Mvc;
 using System;
 using System.Collections.Generic;
-using System.Dynamic;
 using System.Linq;
 
 namespace anBlogg.WebApi.Controllers
@@ -21,11 +20,8 @@ namespace anBlogg.WebApi.Controllers
     [EnableCors("MyPolicy")]
     [ApiController]
     [Route("api/authors/{authorId}/posts")]
-    public class PostsController : CustomControllerBase
+    public class PostsController : PostsControllerBase
     {
-        private Guid currentAuthorId;
-        private Guid currentPostId;
-
         public PostsController(IMapper mapper, IBlogRepository blogRepository,
            IValidator validator, IProperties properties, IPagination pagination)
            : base(mapper, blogRepository, validator, properties, pagination)
@@ -39,168 +35,174 @@ namespace anBlogg.WebApi.Controllers
             return Ok();
         }
 
-        [HttpGet(Name = "GetPostsForAuthor")]
+        [HttpGet(Name = "GetPosts")]
         [HttpHead]
-        public ActionResult<IEnumerable<PostOutputDto>> GetPostsForAuthor
-            (Guid authorId, [FromQuery] PostResourceParameters parameters)
+        public ActionResult<IEnumerable<PostOutputDto>> GetPosts
+            (Guid authorId, [FromQuery] PostResourceParameters parameters,
+            [FromHeader(Name = "Content-Type")] string mediaType)
         {
+            if (CantValidateParameters(parameters))
+                return BadRequest();
+
+            if (validator.DontMatchRules(parameters, ModelState))
+                return ValidationProblem();
+
             if (blogRepository.AuthorNotExist(authorId))
                 return NotFound();
 
-            if (CantValidate(parameters))
-                return ValidationProblem(ModelState);
-
             var postsFromRepo = blogRepository.GetPostsForAuthor(authorId, parameters);
-
-            var header = pagination.CreateHeader(postsFromRepo);
-            Response.Headers.Add(header.Name, header.Value);
+            InsertAuthorsInto(postsFromRepo.ToArray());
 
             var mappedPosts = mapper.Map<IEnumerable<PostOutputDto>>(postsFromRepo);
+            InsertCommentsNumberInto(mappedPosts.ToArray());
 
             var shapedPosts = properties.ShapeData(mappedPosts, parameters.Fields);
 
-            var links = CreateLinksForPosts(postsFromRepo, parameters);
+            AddPaginationHeader(postsFromRepo);
 
-            var infos = mappedPosts.Select(GetIds).ToList();
-
-            static dynamic GetIds(PostOutputDto post) =>
-                new { post.Id, AuthorId = post.Author.Id };
-
-            var counter = 0;
-
-            var shapedPostsWithLinks = shapedPosts.Select(TransformIntoDictionary);
-
-            IDictionary<string, object> TransformIntoDictionary(ExpandoObject post)
+            if (IncludeLinks(mediaType))
             {
-                var postLinks = CreateLinksForPost(infos[counter].AuthorId, infos[counter].Id, null);
-                var postAsDictionary = post as IDictionary<string, object>;
-                postAsDictionary.Add("links", postLinks);
-                counter++;
-                return postAsDictionary;
+                var linkedPosts = GetCollectionWithLinks(postsFromRepo, shapedPosts, parameters);
+                return Ok(linkedPosts);
             }
 
-            var linkedCollectionResource = new
-            {
-                value = shapedPostsWithLinks,
-                links
-            };
+            return Ok(shapedPosts);
+        }
 
-            return Ok(linkedCollectionResource);
+        private bool CantValidateParameters(PostResourceParameters parameters)
+        {
+            return validator.FieldsAreInvalid<PostOutputDto>(parameters.Fields) ||
+                validator.OrderIsInvalid<Post, IPostOutputDto>(parameters.OrderBy);
         }
 
         [HttpGet("{postId}", Name = "GetPost")]
-        public ActionResult<PostOutputDto> GetPostForAuthor
-            (Guid authorId, Guid postId, PostResourceParameters parameters)
+        public ActionResult<PostOutputDto> GetPost
+            (Guid authorId, Guid postId, string fields,
+            [FromHeader(Name = "Content-Type")] string mediaType)
         {
+            if (validator.FieldsAreInvalid<PostOutputDto>(fields))
+                return BadRequest();
+
             if (blogRepository.AuthorNotExist(authorId))
                 return NotFound();
-
-            if (CantValidate(parameters))
-                return ValidationProblem();
 
             var postFromRepo = blogRepository.GetPostForAuthor(authorId, postId);
             if (postFromRepo is null)
                 return NotFound();
 
+            InsertAuthorsInto(postFromRepo);
+
             var mappedPost = mapper.Map<PostOutputDto>(postFromRepo);
-            var shapedPost = properties.ShapeSingleData(mappedPost, parameters.Fields);
+            InsertCommentsNumberInto(mappedPost);
 
-            var links = CreateLinksForPost(authorId, postId, parameters.Fields);
-            var linkedsResourceToReturn = shapedPost as IDictionary<string, object>;
+            var shapedPost = properties.ShapeSingleData(mappedPost, fields);
 
-            linkedsResourceToReturn.Add("links", links);
+            if (IncludeLinks(mediaType))
+            {
+                var idsSet = new PostIdsSet(authorId, postId);
+                var linkedResource = GetLinkedResource(shapedPost, idsSet, fields);
+                return Ok(linkedResource);
+            }
 
-            return Ok(linkedsResourceToReturn);
+            return Ok(shapedPost);
         }
 
         [HttpPost(Name = "CreatePost")]
-        public IActionResult AddPostForAuthor(Guid authorId, PostInputDto postToAdd)
+        public IActionResult AddPost(Guid authorId, PostInputDto newPost,
+            [FromHeader(Name = "Content-Type")] string mediaType)
         {
-            if (blogRepository.AuthorNotExist(authorId))
-                return NotFound();
-
-            RememberIds(authorId);
-            return ValidateThenAddOrUpdate(null, postToAdd);
+            var idsSet = new PostIdsSet(authorId);
+            return AddPost(idsSet, newPost, IncludeLinks(mediaType));
         }
 
-        [HttpPut("{postId}")]
-        public IActionResult UpdatePostForAuthor(Guid authorId, Guid postId, PostInputDto postToUpdate)
+        [HttpPut("{postId}", Name = "UpdatePost")]
+        public IActionResult UpdatePost(Guid authorId, Guid postId, PostInputDto updatedPost,
+             [FromHeader(Name = "Content-Type")] string mediaType)
         {
-            if (blogRepository.AuthorNotExist(authorId))
-                return NotFound();
-
+            var idsSet = new PostIdsSet(authorId, postId);
             var postFromRepo = blogRepository.GetPostForAuthor(authorId, postId);
-
-            RememberIds(authorId, postId);
-            return ValidateThenAddOrUpdate(postFromRepo, postToUpdate);
-        }
-
-        [HttpPatch("{postId}")]
-        public IActionResult PartiallyUpdatePostForAuthor
-            (Guid authorId, Guid postId, JsonPatchDocument<PostInputDto> patchDocument)
-        {
-            if (blogRepository.AuthorNotExist(authorId))
-                return NotFound();
-
-            var postFromRepo = blogRepository.GetPostForAuthor(authorId, postId);
-            var postDto = mapper.Map<PostInputDto>(postFromRepo) ?? new PostInputDto();
-            patchDocument.ApplyTo(postDto, ModelState);
-
-            RememberIds(authorId, postId);
-            return ValidateThenAddOrUpdate(postFromRepo, postDto);
-        }
-
-        private void RememberIds(Guid authorId, Guid? postId = null)
-        {
-            currentAuthorId = authorId;
-
-            if (postId is null)
-                currentPostId = Guid.Empty;
-            else
-                currentPostId = (Guid)postId;
-        }
-
-        private IActionResult ValidateThenAddOrUpdate(Post postFromRepo, IPostInputDto postDto)
-        {
-            if (validator.DontMatchRules(postDto))
-                return ValidationProblem(ModelState);
 
             if (postFromRepo is null)
-                return AddPost(postDto);
-            else
-                return UpdatePost(postDto, postFromRepo);
+                return AddPost(idsSet, updatedPost, IncludeLinks(mediaType));
+
+            mapper.Map(updatedPost, postFromRepo);
+            blogRepository.SaveChanges();
+
+            if (IncludeLinks(mediaType))
+            {
+                var mappedPost = mapper.Map<PostOutputDto>(postFromRepo);
+                return Ok(ShapeAndLinkSinglePost(mappedPost, idsSet));
+            }
+
+            return NoContent();
         }
 
-        private IActionResult AddPost(IPostInputDto postDto)
+        private IActionResult AddPost(PostIdsSet idsSet, PostInputDto newPost, bool includeLinks)
         {
-            var postToAdd = mapper.Map<Post>(postDto);
+            if (validator.DontMatchRules(newPost as IPostInputDto, ModelState))
+                return ValidationProblem(ModelState);
 
-            if (currentPostId != Guid.Empty)
-                postToAdd.Id = currentPostId;
+            if (blogRepository.AuthorNotExist(idsSet.authorId))
+                return NotFound();
 
-            blogRepository.AddPostForAuthor(currentAuthorId, postToAdd);
+            var postToAdd = mapper.Map<Post>(newPost);
+            postToAdd.AuthorId = idsSet.authorId;
+            InsertAuthorsInto(postToAdd);
+
+            if (idsSet.postId != Guid.Empty)
+                postToAdd.Id = idsSet.postId;
+
+            blogRepository.AddPostForAuthor(idsSet.authorId, postToAdd);
             blogRepository.SaveChanges();
 
             var mappedPost = mapper.Map<PostOutputDto>(postToAdd);
-            var shapedPost = properties.ShapeSingleData(mappedPost, null);
+            idsSet.postId = mappedPost.Id;
 
-            var links = CreateLinksForPost(currentAuthorId, mappedPost.Id, null);
-            var linkedResourceToReturn = shapedPost as IDictionary<string, object>;
+            dynamic toReturn = mappedPost;
 
-            linkedResourceToReturn.Add("links", links);
+            if (includeLinks)
+                toReturn = ShapeAndLinkSinglePost(mappedPost, idsSet);
 
             return CreatedAtRoute("GetPost",
-                new { authorId = currentAuthorId, postId = mappedPost.Id }, linkedResourceToReturn);
+                new { idsSet.authorId, idsSet.postId }, toReturn);
         }
 
-        private IActionResult UpdatePost(IPostInputDto postDto, Post postFromRepo)
+        [HttpPatch("{postId}", Name = "PatchPost")]
+        public IActionResult PartiallyUpdatePostForAuthor
+            (Guid authorId, Guid postId, JsonPatchDocument<PostInputDto> patchDocument,
+            [FromHeader(Name = "Content-Type")] string mediaType)
         {
-            mapper.Map(postDto, postFromRepo);
+            if (blogRepository.AuthorNotExist(authorId))
+                return NotFound();
 
-            blogRepository.UpdatePostForAuthor(currentAuthorId, currentPostId);
+            var postFromRepo = blogRepository.GetPostForAuthor(authorId, postId);
+            if (postFromRepo is null)
+                return NotFound();
+
+            var postInputDto = mapper.Map<PostInputDto>(postFromRepo);
+            patchDocument.ApplyTo(postInputDto, ModelState);
+
+            if (validator.DontMatchRules(postInputDto as IPostInputDto, ModelState))
+                return ValidationProblem(ModelState);
+
+            mapper.Map(postInputDto, postFromRepo);
             blogRepository.SaveChanges();
 
+            if (IncludeLinks(mediaType))
+            {
+                var idsSet = new PostIdsSet(authorId, postFromRepo.Id);
+                var mappedPost = mapper.Map<PostOutputDto>(postFromRepo);
+                return Ok(ShapeAndLinkSinglePost(mappedPost, idsSet));
+            }
+
             return NoContent();
+        }
+
+        private IDictionary<string, object> ShapeAndLinkSinglePost
+            (PostOutputDto postToReturn, PostIdsSet idsSet)
+        {
+            var shapedPost = properties.ShapeSingleData(postToReturn);
+            return GetLinkedResource(shapedPost, idsSet);
         }
 
         [HttpDelete("{postId}", Name = "DeletePost")]
@@ -209,58 +211,14 @@ namespace anBlogg.WebApi.Controllers
             if (blogRepository.AuthorNotExist(authorId))
                 return NotFound();
 
-            var post = blogRepository.GetPostForAuthor(authorId, postId);
-            if (post is null)
+            var postFromRepo = blogRepository.GetPostForAuthor(authorId, postId);
+            if (postFromRepo is null)
                 return NotFound();
 
-            blogRepository.DeletePost(post);
+            blogRepository.DeletePost(postFromRepo);
             blogRepository.SaveChanges();
 
             return NoContent();
-        }
-
-        private IEnumerable<LinkDto> CreateLinksForPost(Guid authorId, Guid postId, string fields)
-        {
-            var links = new List<LinkDto>();
-
-            if (string.IsNullOrWhiteSpace(fields))
-                links.Add(new LinkDto(Url.Link("GetPost",
-                    new { authorId, postId }), "self", "GET"));
-            else
-                links.Add(new LinkDto(Url.Link("GetPost",
-                new { authorId, postId, fields }), "self", "GET"));
-
-            links.Add(new LinkDto(Url.Link("CreatePost",
-                new { authorId }), "create_post", "POST"));
-
-            return links;
-        }
-
-        private IEnumerable<LinkDto> CreateLinksForPosts
-            (PagedList<Post> posts, PostResourceParameters parameters)
-        {
-            var links = new List<LinkDto>();
-            var uriResource = new UriResource(Url, "GetPostsForAuthor");
-            var resourceUri = pagination.CreateResourceUri(parameters, uriResource, ResourceUriType.Current);
-
-            links.Add(new LinkDto(resourceUri, "self", "GET"));
-
-            var pagesLinks = pagination.CreatePagesLinks(posts, parameters, uriResource);
-
-            if (pagesLinks.HasPrevious)
-                links.Add(new LinkDto(pagesLinks.Previous, "previousPage", "GET"));
-
-            if (pagesLinks.HasNext)
-                links.Add(new LinkDto(pagesLinks.Next, "nextPage", "GET"));
-
-            return links;
-        }
-
-        protected bool CantValidate(IPostResourceParameters parameters)
-        {
-            return (validator.DontMatchRules(parameters) ||
-                validator.OrderIsInvalid<Post, IPostOutputDto>(parameters.OrderBy) ||
-                validator.FieldsAreInvalid<IPostOutputDto>(parameters.Fields));
         }
     }
 }

@@ -1,6 +1,5 @@
 ﻿using anBlogg.Application.Services.Models;
 using System;
-using System.Collections.Generic;
 
 namespace anBlogg.WebApi.Models
 {
@@ -14,6 +13,6 @@ namespace anBlogg.WebApi.Models
         public string Contents { get; set; }
         public string[] Tags { get; set; }
         public int Score { get; set; }
-        public List<ICommentOutputDto> Comments { get; set; }
+        public int CommentsNumber { get; set; }
     }
 }

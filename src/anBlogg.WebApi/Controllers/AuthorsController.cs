@@ -5,10 +5,10 @@ using anBlogg.Domain;
 using anBlogg.Domain.Entities;
 using anBlogg.Infrastructure.FluentValidation;
 using anBlogg.WebApi.Controllers.Common;
+using anBlogg.WebApi.Helpers;
 using anBlogg.WebApi.Models;
 using anBlogg.WebApi.ResourceParameters;
 using AutoMapper;
-using Microsoft.AspNetCore.Cors;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Net.Http.Headers;
 using System;
@@ -18,9 +18,9 @@ using System.Linq;
 
 namespace anBlogg.WebApi.Controllers
 {
-    [EnableCors("MyPolicy")]
     [ApiController]
     [Route("api/authors")]
+    [ResponseCache(NoStore = true, Location = ResponseCacheLocation.None)]
     public class AuthorsController : CustomControllerBase
     {
         public AuthorsController(IMapper mapper, IBlogRepository blogRepository,
@@ -31,25 +31,25 @@ namespace anBlogg.WebApi.Controllers
 
         [HttpGet(Name = "GetAuthors")]
         public ActionResult<IEnumerable<AuthorOutputDto>> GetAllAuthors(
-            [FromHeader(Name = "Accept")] string mediaType,
+            [FromHeader(Name = "Content-Type")] string mediaType,
             [FromQuery] BasicResourceParameters parameters)
         {
             var parsedMediaType = GetMediaType(mediaType);
             var fullMedia = FullMedia(parsedMediaType);
 
-            if (parsedMediaType is null || CantValidate(parameters, fullMedia))
+            if (CantValidate(parameters, fullMedia) || parsedMediaType is null)
                 return BadRequest();
 
             var authorsFromRepo = blogRepository.GetAllAuthors(parameters);
 
-            AddHeader(authorsFromRepo);
+            AddPaginationHeader(authorsFromRepo);
 
             var shapedAuthors = GetShapedAuthors
                 (authorsFromRepo, parameters.Fields, fullMedia);
 
             if (IncludeLinks(parsedMediaType))
             {
-                var linkedAuthors = GetLinkedAuthorsWithLinks
+                var linkedAuthors = GetCollectionWithLinks
                     (authorsFromRepo, shapedAuthors, parameters);
 
                 return Ok(linkedAuthors);
@@ -81,61 +81,9 @@ namespace anBlogg.WebApi.Controllers
             return properties.ShapeData(mappedAuthors, fields);
         }
 
-        private dynamic GetLinkedAuthorsWithLinks(PagedList<Author> authors,
-            IEnumerable<ExpandoObject> shapedAuthors, BasicResourceParameters parameters)
-        {
-            var authorsIds = GetIds(authors);
-
-            return new
-            {
-                value = GetLinkedAuthors(shapedAuthors, authorsIds),
-                links = CreateLinksForAuthors(authors, parameters)
-            };
-        }
-
-        private List<Guid> GetIds(PagedList<Author> authors) =>
-            authors.Select(a => a.Id).ToList();
-
-        private IEnumerable<IDictionary<string, object>> GetLinkedAuthors
-            (IEnumerable<ExpandoObject> shapedAuthors, List<Guid> authorsIds)
-        {
-            var counter = 0;
-
-            return shapedAuthors.Select(TransformIntoDictionary);
-
-            IDictionary<string, object> TransformIntoDictionary(ExpandoObject author)
-            {
-                var authorLink = CreateLinksForAuthor(authorsIds[counter], null);
-                var authorAsDictionary = author as IDictionary<string, object>;
-                authorAsDictionary.Add("links", authorLink);
-
-                counter++;
-                return authorAsDictionary;
-            }
-        }
-
-        private IEnumerable<LinkDto> CreateLinksForAuthors(PagedList<Author> authors, IResourceParameters parameters)
-        {
-            var links = new List<LinkDto>();
-            var uriResource = new UriResource(Url, "GetAuthors");
-            var resourceUri = pagination.CreateResourceUri(parameters, uriResource, ResourceUriType.Current);
-
-            links.Add(new LinkDto(resourceUri, "self", "GET"));
-
-            var pagesLinks = pagination.CreatePagesLinks(authors, parameters, uriResource);
-
-            if (pagesLinks.HasPrevious)
-                links.Add(new LinkDto(pagesLinks.Previous, "previousPage", "GET"));
-
-            if (pagesLinks.HasNext)
-                links.Add(new LinkDto(pagesLinks.Next, "nextPage", "GET"));
-
-            return links;
-        }
-
-        [HttpGet("{id}", Name = "GetAuthor")]
+        [HttpGet("{authorId}", Name = "GetAuthor")]
         public ActionResult<AuthorOutputDto> GetAuthor
-            ([FromHeader(Name = "Accept")] string mediaType, Guid id, string fields)
+            ([FromHeader(Name = "Content-Type")] string mediaType, Guid authorId, string fields)
         {
             var parsedMediaType = GetMediaType(mediaType);
             var fullMedia = FullMedia(parsedMediaType);
@@ -143,7 +91,7 @@ namespace anBlogg.WebApi.Controllers
             if (parsedMediaType is null || FieldsAreInvalid(fields, fullMedia))
                 return BadRequest();
 
-            var authorFromRepo = blogRepository.GetAuthor(id);
+            var authorFromRepo = blogRepository.GetAuthor(authorId);
 
             if (authorFromRepo is null)
                 return NotFound();
@@ -152,7 +100,7 @@ namespace anBlogg.WebApi.Controllers
 
             if (IncludeLinks(parsedMediaType))
             {
-                var links = CreateLinksForAuthor(authorFromRepo.Id, fields);
+                var links = CreateLinksForSingleResource(new AuthorIdsSet(authorId), fields);
                 var authorAsDictionary = shapedAuthor as IDictionary<string, object>;
                 authorAsDictionary.Add("links", links);
 
@@ -162,17 +110,14 @@ namespace anBlogg.WebApi.Controllers
             return Ok(shapedAuthor);
         }
 
-        private MediaTypeHeaderValue GetMediaType(string mediaType)
+        private bool FullMedia(MediaTypeHeaderValue headerValue)
         {
-            MediaTypeHeaderValue.TryParse(mediaType,
-                out MediaTypeHeaderValue parsedMediaType);
+            if (headerValue is null)
+                return true;
 
-            return parsedMediaType;
-        }
-
-        private bool FullMedia(MediaTypeHeaderValue headerValue) =>
-            headerValue.MediaType == Constants.AuthorFullMediaType ||
+            return headerValue.MediaType == Constants.AuthorFullMediaType ||
                 headerValue.MediaType == Constants.AuthorFullHateoasMediaType;
+        }
 
         private ExpandoObject GetShapedAuthor
             (Author author, string fields, bool fullMedia)
@@ -201,24 +146,6 @@ namespace anBlogg.WebApi.Controllers
             }
         }
 
-        private bool IncludeLinks(MediaTypeHeaderValue mediaType) =>
-            mediaType.SubTypeWithoutSuffix.EndsWith("hateoas",
-                StringComparison.InvariantCultureIgnoreCase);
-
-        private IEnumerable<LinkDto> CreateLinksForAuthor(Guid authorId, string fields)
-        {
-            var links = new List<LinkDto>();
-
-            if (string.IsNullOrWhiteSpace(fields))
-                links.Add(new LinkDto(Url.Link("GetAuthor",
-                    new { id = authorId }), "self", "GET"));
-            else
-                links.Add(new LinkDto(Url.Link("GetAuthor",
-                new { id = authorId, fields }), "self", "GET"));
-
-            return links;
-        }
-
         private bool FieldsAreInvalid(string fields, bool fullMedia = true)
         {
             if (fullMedia)
@@ -233,6 +160,27 @@ namespace anBlogg.WebApi.Controllers
                 return validator.OrderIsInvalid<Author, AuthorOutputDto>(order);
             else
                 return validator.OrderIsInvalid<Author, AuthorShortOutputDto>(order);
+        }
+
+        protected override IEnumerable<LinkDto> CreateLinksForSingleResource(IIdsSet rawIds, string fields)
+        {
+            var ids = rawIds as AuthorIdsSet;
+            var links = new List<LinkDto>();
+
+            if (string.IsNullOrWhiteSpace(fields))
+                links.Add(new LinkDto(Url.Link("GetAuthor",
+                    new { ids.authorId }), "self", "GET"));
+            else
+                links.Add(new LinkDto(Url.Link("GetAuthor",
+                    new { ids.authorId, fields }), "self", "GET"));
+
+            return links;
+        }
+
+        protected override IEnumerable<IIdsSet> GetIds<T>(PagedList<T> resources)
+        {
+            var authors = resources as PagedList<Author>;
+            return authors.Select(author => new AuthorIdsSet(author.Id));
         }
     }
 }

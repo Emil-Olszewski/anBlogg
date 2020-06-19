@@ -14,7 +14,8 @@ namespace anBlogg.WebApi.Controllers
             var links = new List<LinkDto>
             {
                 new LinkDto(Url.Link("GetRoot", new { }), "self", "GET"),
-                new LinkDto(Url.Link("GetPosts", new { }), "posts", "GET")
+                new LinkDto(Url.Link("GetPosts", new { }), "posts", "GET"),
+                new LinkDto(Url.Link("GetAuthors", new { }), "authors", "GET")
             };
 
             return Ok(links);

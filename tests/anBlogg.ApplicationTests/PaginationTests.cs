@@ -24,24 +24,30 @@ namespace anBlogg.ApplicationTests
         public void CreatePagesLinksTest()
         {
             #region Arrange
+
             var elements = new List<string>() { "1", "2", "3" }.AsQueryable();
             var pagedList = PagedList<string>.Create(elements, 2, 1);
             var target = new Pagination(properties.Object);
             var parameters = new PostResourceParameters();
 
             PrepareObjects();
-            #endregion
+
+            #endregion Arrange
 
             #region Act
+
             var result = target.CreatePagesLinks(pagedList,
-                parameters, new UriResource(urlHelper.Object));
-            #endregion
+                parameters, new ResourceUriHelper(urlHelper.Object));
+
+            #endregion Act
 
             #region Assert
+
             Assert.IsTrue(result.HasNext);
             Assert.IsTrue(result.HasPrevious);
             Assert.AreEqual("GetStrings", result.Next);
-            #endregion
+
+            #endregion Assert
         }
 
         private void PrepareObjects()
@@ -51,7 +57,7 @@ namespace anBlogg.ApplicationTests
 
             properties.Setup(p => p.CreateDynamicResourceFrom(It.IsAny<IResourceParameters>()))
                 .Returns(expandoObject);
-            
+
             expandoObject.TryAdd("PageNumber", 3);
 
             options.PropertyNameCaseInsensitive = true;

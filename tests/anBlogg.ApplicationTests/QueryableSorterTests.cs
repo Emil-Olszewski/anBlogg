@@ -16,11 +16,14 @@ namespace anBlogg.ApplicationTests
         {
             public string Name { get; set; }
             public int Age { get; set; }
+            public int FootSize { get; set; }
+
 
             public TestPerson(string name, int age)
             {
                 Name = name;
                 Age = age;
+                FootSize = 30;
             }
         }
 
@@ -34,7 +37,8 @@ namespace anBlogg.ApplicationTests
             {
                 new TestPerson("Janek", 30),
                 new TestPerson("Agata", 28),
-                new TestPerson("Mirek", 17)
+                new TestPerson("Mirek", 17),
+                new TestPerson("Bercio", 24)
             }.AsQueryable();
 
             var arguedProperty1 = "age asc";
@@ -60,10 +64,10 @@ namespace anBlogg.ApplicationTests
             #region Assert
 
             Assert.AreEqual("Mirek", result1[0].Name);
-            Assert.AreEqual("Janek", result1[2].Name);
+            Assert.AreEqual("Janek", result1[^1].Name);
 
             Assert.AreEqual("Mirek", result2[0].Name);
-            Assert.AreEqual("Agata", result2[2].Name);
+            Assert.AreEqual("Agata", result2[^1].Name);
 
             #endregion Assert
         }

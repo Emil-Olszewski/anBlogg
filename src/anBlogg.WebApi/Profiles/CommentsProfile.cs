@@ -10,10 +10,26 @@ namespace anBlogg.WebApi.Profiles
         public CommentsProfile()
         {
             CreateMap<Comment, ICommentOutputDto>()
-                .ForMember(dest => dest.Score, opt => opt.MapFrom(src => src.Score.Value));
+                .ForMember(dest => dest.Score, opt =>
+                opt.MapFrom(src => src.Score.Value));
 
             CreateMap<Comment, CommentOutputDto>()
-                .ForMember(dest => dest.Score, opt => opt.MapFrom(src => src.Score.Value));
+                .ForMember(dest => dest.Score, opt =>
+                opt.MapFrom(src => src.Score.Value));
+
+            CreateMap<CommentInputDto, Comment>()
+                .ForMember(dest => dest.AuthorId, opt =>
+                opt.MapFrom(src => src.AuthorId))
+
+                .ForMember(dest => dest.Contents, opt =>
+                opt.MapFrom(src => src.Contents))
+                .ForAllOtherMembers(opt => opt.Ignore());
+
+            CreateMap<Comment, CommentInputDto>()
+                .ForMember(dest => dest.AuthorId, opt =>
+                opt.MapFrom(src => src.AuthorId))
+                .ForMember(dest => dest.Contents, opt =>
+                    opt.MapFrom(src => src.Contents));
         }
     }
 }

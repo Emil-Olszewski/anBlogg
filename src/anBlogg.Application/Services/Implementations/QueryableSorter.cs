@@ -17,11 +17,13 @@ namespace anBlogg.Application.Services.Implementations
         {
             var orderInstruction =
                 TransformParametersIntoUnderstandableString(parameters, mappingDictionary);
+
             return source.OrderBy(orderInstruction);
         }
 
         private string TransformParametersIntoUnderstandableString
-           (string unseparatedParameters, Dictionary<string, PropertyMappingValue> mappingDictionary)
+            (string unseparatedParameters, 
+            Dictionary<string, PropertyMappingValue> mappingDictionary)
         {
             var orderInstruction = string.Empty;
             var arguedProperties = properties

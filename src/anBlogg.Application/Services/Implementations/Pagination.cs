@@ -8,7 +8,7 @@ namespace anBlogg.Application.Services.Implementations
     {
         private readonly IProperties properties;
 
-        public Pagination(IProperties properties) => 
+        public Pagination(IProperties properties) =>
             this.properties = properties;
 
         public Header CreateHeader<T>(PagedList<T> elements)
@@ -30,18 +30,18 @@ namespace anBlogg.Application.Services.Implementations
             };
         }
 
-        public PagesLinks CreatePagesLinks<T1, T2>(PagedList<T1> elements, 
-            T2 parameters, UriResource uriResource)
+        public PagesLinks CreatePagesLinks<T1, T2>(PagedList<T1> elements,
+            T2 parameters, ResourceUriHelper resourceUriHelper)
         {
-            if (string.IsNullOrWhiteSpace(uriResource.GetMethodName))
-                uriResource.GetMethodName = DeduceGetMethodNameFor(typeof(T1));
+            if (string.IsNullOrWhiteSpace(resourceUriHelper.GetMethodName))
+                resourceUriHelper.GetMethodName = DeduceGetMethodNameFor(typeof(T1));
 
             var previousPageLink = elements.HasPrevious ?
-                CreateResourceUri(parameters, uriResource, ResourceUriType.PreviousPage) 
+                CreateResourceUri(parameters, resourceUriHelper, ResourceUriType.PreviousPage)
                 : null;
 
             var nextPageLink = elements.HasNext ?
-               CreateResourceUri(parameters, uriResource, ResourceUriType.NextPage) 
+               CreateResourceUri(parameters, resourceUriHelper, ResourceUriType.NextPage)
                : null;
 
             return new PagesLinks(previousPageLink, nextPageLink);
@@ -54,12 +54,12 @@ namespace anBlogg.Application.Services.Implementations
         }
 
         public string CreateResourceUri<T>
-            (T source, UriResource uriResource, ResourceUriType type)
+            (T source, ResourceUriHelper resourceUriHelper, ResourceUriType type)
         {
             var resource = properties.CreateDynamicResourceFrom(source);
             ((dynamic)resource).PageNumber += GetValueToAddDependingOn(type);
 
-            return uriResource.UrlHelper.Link(uriResource.GetMethodName, resource);
+            return resourceUriHelper.UrlHelper.Link(resourceUriHelper.GetMethodName, resource);
         }
 
         private int GetValueToAddDependingOn(ResourceUriType type)
