@@ -1,0 +1,14 @@
+div span.only-show-on-hover {
+    visibility: hidden;
+}
+div:hover span.only-show-on-hover  {
+    visibility: visible;
+}
+
+.action {
+    text-decoration: underline;
+}
+
+.action:hover {
+    cursor: pointer;
+}

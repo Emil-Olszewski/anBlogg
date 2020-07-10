@@ -4,6 +4,7 @@ using anBlogg.Domain;
 using anBlogg.Infrastructure;
 using anBlogg.Infrastructure.Persistence;
 using AutoMapper;
+using IdentityServer4.AccessTokenValidation;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Cors.Infrastructure;
 using Microsoft.AspNetCore.Hosting;
@@ -56,6 +57,15 @@ namespace anBlogg.WebApi
                 options.SerializerSettings.ContractResolver =
                     new CamelCasePropertyNamesContractResolver();
 
+            services.AddAuthentication(IdentityServerAuthenticationDefaults.AuthenticationScheme)
+                .AddIdentityServerAuthentication(SetupAuthentication);
+
+            static void SetupAuthentication(IdentityServerAuthenticationOptions options)
+            {
+                options.Authority = "https://localhost:5001";
+                options.ApiName = "anBloggApi";
+            }
+
             services.AddCors(SetupCors);
 
             static void SetupCors(CorsOptions options) =>
@@ -97,6 +107,8 @@ namespace anBlogg.WebApi
             app.UseRouting();
 
             app.UseCors("MyPolicy");
+
+            app.UseAuthentication();
 
             app.UseAuthorization();
 

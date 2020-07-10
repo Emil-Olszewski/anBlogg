@@ -1,0 +1,30 @@
+<div class="card p-3">
+
+    <div class="card-body">
+        <!-- headers -->
+        <h2 class="card-title">{{post.title}}</h2>
+        <h6 class="text-muted">
+            <a class="an-text-secondary" [routerLink]="['/authors/', post.author.id]">{{post.author.displayName}}</a>
+        </h6>
+        <h6 class="card-subtitle text-muted">
+            {{post.created | date: 'short'}}
+        </h6>
+
+        <!-- contents -->
+        <div class="card-text mt-4">
+            <span style="text-align: justify;" [innerHTML]="postContents"></span>
+        </div>
+
+        <!-- read on / fold -->
+        <a href="javascript:void(0)" *ngIf="longEnoughToHide && hided" (click)="onExpand()"
+            class="badge an-bg-secondary text-white">
+            Read on
+        </a>
+        <a href="javascript:void(0)" *ngIf="longEnoughToHide && !hided" (click)="onFold()"
+            class="badge an-bg-secondary text-white">
+            Fold
+        </a>
+
+    </div>
+    
+</div>

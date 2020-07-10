@@ -1,0 +1,4 @@
+<div class="text-danger" *ngIf="posts.length === 0">No posts</div>
+<div class="mb-5 mt-5" *ngFor="let post of posts">
+    <post [post]=post></post>
+</div>

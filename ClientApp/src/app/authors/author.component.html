@@ -1,0 +1,17 @@
+<div class="card mt-5">
+    <div class="card-header">
+        <h2>{{author.displayName}}</h2>
+        
+        <span class="text-muted">Reputation: </span>
+        <span [ngClass]="{'text-success': author.score>0 , 'text-danger': author.score<0}">
+            {{author.score}} 
+        </span>
+        
+    </div>
+    <div class="card-body">
+        Posts: {{author.postsNumber}} 
+        <button class="btn-sm btn-primary" routerLink="posts/1">Load Posts</button> <br/>
+        Comments: {{author.commentsNumber}}
+    </div>
+</div>
+<router-outlet></router-outlet>

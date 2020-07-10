@@ -6,6 +6,7 @@ using anBlogg.WebApi.Controllers.Common;
 using anBlogg.WebApi.Models;
 using anBlogg.WebApi.ResourceParameters;
 using AutoMapper;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using System.Collections.Generic;
 using System.Linq;
@@ -14,6 +15,7 @@ namespace anBlogg.WebApi.Controllers
 {
     [ApiController]
     [Route("api/posts")]
+    [Authorize]
     public class PostsCollectionController : PostsControllerBase
     {
         public PostsCollectionController(IMapper mapper, IBlogRepository blogRepository,
@@ -27,6 +29,8 @@ namespace anBlogg.WebApi.Controllers
             [FromHeader(Name = "Content-Type")] string mediaType,
             [FromQuery] PostResourceParameters parameters)
         {
+            var user = this.User;
+
             if (CantValidate(parameters))
                 return BadRequest();
 

@@ -1,0 +1,39 @@
+<div *ngIf="loaded">
+
+    <!-- header -->
+    <h4>Comments</h4>
+    <span *ngIf="comments.length === 0" class="text-muted">
+        Nobody wrote nothing. Be the first commenter!
+    </span>
+
+    <!-- comments loop -->
+    <div class="card mt-3 p-2" *ngFor="let comment of comments">
+        <a class="an-text-secondary" [routerLink]="['/authors/', comment.author.id]">
+            {{comment.author.displayName}}
+        </a>
+        <span class="text-muted"> at {{comment.created | date: 'short'}}</span>
+        <div>
+            {{comment.contents}}
+        </div>
+    </div>
+
+    <!-- comment add -->
+    <div class="mt-3">
+        <comment-add></comment-add>
+    </div>
+
+</div>
+
+<!-- show / hide  -->
+<div class="row">
+    <div class="mt-3 mx-auto">
+        <span (click)="loaded = !loaded">
+            <a class="an-text-secondary" href="javascript:void(0)" *ngIf="!loaded">
+                🡣 Comments ({{comments.length}}) 🡣
+            </a>
+            <a class="an-text-secondary" href="javascript:void(0)" *ngIf="loaded">
+                🡡 Hide comments 🡡
+            </a>
+        </span>
+    </div>
+</div>
