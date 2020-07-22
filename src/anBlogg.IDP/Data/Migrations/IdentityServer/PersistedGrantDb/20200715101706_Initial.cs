@@ -1,9 +1,9 @@
 ﻿using System;
 using Microsoft.EntityFrameworkCore.Migrations;
 
-namespace anBlogg.IDP.Migrations
+namespace anBlogg.IDP.Data.Migrations.IdentityServer.PersistedGrantDb
 {
-    public partial class nextmigration : Migration
+    public partial class Initial : Migration
     {
         protected override void Up(MigrationBuilder migrationBuilder)
         {

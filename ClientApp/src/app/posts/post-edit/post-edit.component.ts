@@ -19,11 +19,11 @@ export class PostEditComponent implements OnInit, OnDestroy {
   tagErrors: string[];
 
   validationMessages = {
-    required: "Don't make fun of me! It cannot be empty.",
+    required: "Don't make a fun of me! It cannot be empty.",
     maxLength: "Slow down! It's too long",
     minLength: "Make an effort! It's too short.",
     tagEmpty: "Empty tag! Look what've you done..",
-    tagRepeated: "I could swear I already saw tag like this",
+    tagRepeated: "I could swear I've already seen tag like this",
   }
 
   isControlInvalid: { [controlName: string]: boolean } = {};
@@ -34,9 +34,10 @@ export class PostEditComponent implements OnInit, OnDestroy {
   ngOnInit() {
     this.resolveData();
     this.buildForm()
-
     this.subscribeToFormControlChanges('title');
     this.subscribeToFormControlChanges('contents');
+    this.addTagWhenSpaceTyped();
+    this.makeSureTagsArrayInitialized();
   }
 
   ngOnDestroy() {
@@ -72,7 +73,8 @@ export class PostEditComponent implements OnInit, OnDestroy {
       ]],
       contents: ['', [
         Validators.required,
-        Validators.maxLength(1000),
+        Validators.minLength(10),
+        Validators.maxLength(3000),
       ]],
       tag: ''
     });
@@ -85,19 +87,26 @@ export class PostEditComponent implements OnInit, OnDestroy {
       debounceTime(1000)
     ).subscribe(() => {
       control.updateValueAndValidity();
-      if (this.isInvalid(control)) {
-        this.isControlInvalid[formControlName] = true;
-      } else {
-        this.isControlInvalid[formControlName] = false;
-      }
+      this.isControlInvalid[formControlName] = this.isInvalid(control) ? true : false;
     });
   }
 
-  isInvalid(form: AbstractControl) {
-    if ((form.touched || form.dirty) && form.invalid) {
-      return true;
-    } else {
-      return false;
+  addTagWhenSpaceTyped() {
+    const control = this.editForm.get('tag');
+    control.valueChanges.pipe(
+      takeUntil(this.unsubscribe$)
+    ).subscribe(data => {
+      if (data[data.length - 1] === ' ') {
+        this.onAddTag();
+        control.setValue('');
+      }
+    })
+  }
+
+  makeSureTagsArrayInitialized() {
+    this.tagErrors = new Array();
+    if (!this.post.tags) {
+      this.post.tags = new Array();
     }
   }
 
@@ -105,16 +114,13 @@ export class PostEditComponent implements OnInit, OnDestroy {
     if (this.editForm.invalid) {
       this.updateErrorsForAllControls();
     } else {
-      this.post.title = this.editForm.get('title').value;
-      this.post.contents = this.editForm.get('contents').value;
-
-      this.postService.postPost('184edd78-aeab-4c20-becc-6d3dc9f1b841', this.post).pipe(
-        takeUntil(this.unsubscribe$)
-      ).subscribe(
-        (value) => { this.router.navigate(['/posts'])}, 
-        (error) => { console.log(error.error.errors) }),
-        (complete) => console.log(complete);
+      this.addNewPost()
     }
+  }
+
+  isInvalid(form: AbstractControl) {
+    const needToHighlight = (form.touched || form.dirty) && form.invalid
+    return needToHighlight ? true : false;
   }
 
   updateErrorsForAllControls() {
@@ -122,40 +128,50 @@ export class PostEditComponent implements OnInit, OnDestroy {
     this.isControlInvalid['contents'] = true;
   }
 
+  addNewPost() {
+    this.post.title = this.editForm.get('title').value;
+    this.post.contents = this.editForm.get('contents').value;
+    this.postService.postPost(this.post).pipe(
+      takeUntil(this.unsubscribe$)
+    ).subscribe(
+      () => { this.router.navigate(['/posts']) },
+      (error) => { console.log(error.error.errors) }),
+      (complete) => console.log(complete);
+  }
+
   onAddTag() {
-    const newTag = this.editForm.get('tag').value;
+    const newTag = this.getTagFromInputAndClear();
     if (newTag) {
-      this.post.tags = this.makeSureArrayInitialized(this.post.tags);
-      if (this.tagNotAlreadyTyped(newTag)) {
-        this.addTagAndResetInput(newTag);
-      } else {
-        this.addTagError(this.validationMessages.tagRepeated);
-      }
+      this.addTagOrTagError(newTag);
     } else {
       this.addTagError(this.validationMessages.tagEmpty);
     }
   }
 
-  makeSureArrayInitialized(array: any[]) {
-    if (array) {
-      return array;
+  getTagFromInputAndClear() {
+    const newTag = this.editForm.get('tag').value;
+    this.editForm.get('tag').setValue('');
+    return newTag;
+  }
+
+  addTagOrTagError(newTag: string) {
+    if (this.tagNotAlreadyTyped(newTag)) {
+      this.addNewTag(newTag);
     } else {
-      return [];
+      this.addTagError(this.validationMessages.tagRepeated);
     }
   }
 
   tagNotAlreadyTyped(tagToCheck: string) {
-    return !this.post.tags.find(tag => tag === tagToCheck);
+    return !this.post.tags.find(tag => tag.trim() === tagToCheck.trim());
   }
 
-  addTagAndResetInput(newTag: string) {
+  addNewTag(newTag: string) {
+    newTag = newTag.trim();
     this.post.tags.push(newTag);
-    this.editForm.get('tag').setValue('');
   }
 
   addTagError(message: string) {
-    this.tagErrors = this.makeSureArrayInitialized(this.tagErrors);
-    console.log(this.tagErrors);
     this.tagErrors.push(message);
   }
 

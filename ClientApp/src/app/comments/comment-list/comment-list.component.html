@@ -1,17 +1,31 @@
-<div *ngIf="loaded">
+<!-- header -->
 
-    <!-- header -->
+<div class="row">
+    <div class="mt-3 mx-auto">
+        <span (click)="loaded = !loaded">
+            <a class="an-text-secondary" (click)="loadComments()" href="javascript:void(0)" *ngIf="!loaded">
+                🡣 Comments ({{commentsInfo.amount}}) 🡣
+            </a>
+            <a class="an-text-secondary" (click)="visible = !visible"href="javascript:void(0)" *ngIf="loaded">
+                🡡 Hide comments 🡡
+            </a>
+        </span>
+    </div>
+</div>
+
+<div *ngIf="visible">
     <h4>Comments</h4>
-    <span *ngIf="comments.length === 0" class="text-muted">
-        Nobody wrote nothing. Be the first commenter!
-    </span>
+
+<span *ngIf="commentsInfo.amount === 0" class="text-muted">
+    Nobody wrote nothing. Be the first commenter!
+</span>
 
     <!-- comments loop -->
     <div class="card mt-3 p-2" *ngFor="let comment of comments">
         <a class="an-text-secondary" [routerLink]="['/authors/', comment.author.id]">
             {{comment.author.displayName}}
         </a>
-        <span class="text-muted"> at {{comment.created | date: 'short'}}</span>
+        <span class="text-muted"> at {{comment.created | date: 'dd LLLL yyyy, HH:MM'}}</span>
         <div>
             {{comment.contents}}
         </div>
@@ -19,21 +33,11 @@
 
     <!-- comment add -->
     <div class="mt-3">
-        <comment-add></comment-add>
+        <comment-add [commentsInfo] = commentsInfo [comments] = comments></comment-add>
     </div>
 
-</div>
 
-<!-- show / hide  -->
-<div class="row">
-    <div class="mt-3 mx-auto">
-        <span (click)="loaded = !loaded">
-            <a class="an-text-secondary" href="javascript:void(0)" *ngIf="!loaded">
-                🡣 Comments ({{comments.length}}) 🡣
-            </a>
-            <a class="an-text-secondary" href="javascript:void(0)" *ngIf="loaded">
-                🡡 Hide comments 🡡
-            </a>
-        </span>
-    </div>
+
+    <!-- show / hide  -->
+
 </div>

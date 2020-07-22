@@ -9,6 +9,7 @@ using anBlogg.WebApi.Helpers;
 using anBlogg.WebApi.Models;
 using anBlogg.WebApi.ResourceParameters;
 using AutoMapper;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.JsonPatch;
 using Microsoft.AspNetCore.Mvc;
 using System;
@@ -101,11 +102,13 @@ namespace anBlogg.WebApi.Controllers
             return Ok(shapedComment);
         }
 
+        [Authorize]
         [HttpPost(Name = "CreateComment")]
         public IActionResult CreateComment(Guid postAuthorId, Guid postId,
             CommentInputDto newComment, [FromHeader(Name = "Content-Type")] string mediaType)
         {
             var idsSet = new CommentIdsSet(postAuthorId, postId);
+            newComment.AuthorId = GetUserId();
             return AddComment(idsSet, newComment, IncludeLinks(mediaType));
         }
 
@@ -167,6 +170,7 @@ namespace anBlogg.WebApi.Controllers
                 comment.Author = blogRepository.GetAuthor(comment.AuthorId);
         }
 
+        [Authorize]
         [HttpPatch("{commentId}", Name = "PatchComment")]
         public IActionResult PartiallyUpdateComment(Guid postAuthorId, Guid postId, Guid commentId,
             JsonPatchDocument<CommentInputDto> patchDocument,
@@ -205,6 +209,7 @@ namespace anBlogg.WebApi.Controllers
             return GetLinkedResource(shapedComment, idsSet);
         }
 
+        [Authorize]
         [HttpDelete("{commentId}", Name = "DeleteComment")]
         public IActionResult DeleteComment(Guid postAuthorId, Guid postId, Guid commentId)
         {

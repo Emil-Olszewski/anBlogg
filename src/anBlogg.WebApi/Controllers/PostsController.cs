@@ -8,6 +8,8 @@ using anBlogg.WebApi.Helpers;
 using anBlogg.WebApi.Models;
 using anBlogg.WebApi.ResourceParameters;
 using AutoMapper;
+using Microsoft.AspNetCore.Authentication;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Cors;
 using Microsoft.AspNetCore.JsonPatch;
 using Microsoft.AspNetCore.Mvc;
@@ -107,18 +109,26 @@ namespace anBlogg.WebApi.Controllers
             return Ok(shapedPost);
         }
 
+        [Authorize]
         [HttpPost(Name = "CreatePost")]
         public IActionResult AddPost(Guid authorId, PostInputDto newPost,
             [FromHeader(Name = "Content-Type")] string mediaType)
         {
+            if (IsUserIdNotEqualTo(authorId))
+                return Unauthorized();
+
             var idsSet = new PostIdsSet(authorId);
             return AddPost(idsSet, newPost, IncludeLinks(mediaType));
         }
 
+        [Authorize]
         [HttpPut("{postId}", Name = "UpdatePost")]
         public IActionResult UpdatePost(Guid authorId, Guid postId, PostInputDto updatedPost,
              [FromHeader(Name = "Content-Type")] string mediaType)
         {
+            if (IsUserIdNotEqualTo(authorId))
+                return Unauthorized();
+
             var idsSet = new PostIdsSet(authorId, postId);
             var postFromRepo = blogRepository.GetPostForAuthor(authorId, postId);
 
@@ -167,11 +177,15 @@ namespace anBlogg.WebApi.Controllers
                 new { idsSet.authorId, idsSet.postId }, toReturn);
         }
 
+        [Authorize]
         [HttpPatch("{postId}", Name = "PatchPost")]
         public IActionResult PartiallyUpdatePostForAuthor
             (Guid authorId, Guid postId, JsonPatchDocument<PostInputDto> patchDocument,
             [FromHeader(Name = "Content-Type")] string mediaType)
         {
+            if (IsUserIdNotEqualTo(authorId))
+                return Unauthorized();
+
             if (blogRepository.AuthorNotExist(authorId))
                 return NotFound();
 
@@ -205,9 +219,13 @@ namespace anBlogg.WebApi.Controllers
             return GetLinkedResource(shapedPost, idsSet);
         }
 
+        [Authorize]
         [HttpDelete("{postId}", Name = "DeletePost")]
         public ActionResult DeletePostForAuthor(Guid authorId, Guid postId)
         {
+            if (IsUserIdNotEqualTo(authorId))
+                return Unauthorized();
+
             if (blogRepository.AuthorNotExist(authorId))
                 return NotFound();
 

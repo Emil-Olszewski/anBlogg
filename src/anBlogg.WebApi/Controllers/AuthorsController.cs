@@ -4,6 +4,7 @@ using anBlogg.Application.Services.Models;
 using anBlogg.Domain;
 using anBlogg.Domain.Entities;
 using anBlogg.Infrastructure.FluentValidation;
+using anBlogg.Infrastructure.FluentValidation.Models;
 using anBlogg.WebApi.Controllers.Common;
 using anBlogg.WebApi.Helpers;
 using anBlogg.WebApi.Models;
@@ -29,6 +30,13 @@ namespace anBlogg.WebApi.Controllers
         {
         }
 
+        [HttpOptions]
+        public IActionResult GetAuthorOptions()
+        {
+            Response.Headers.Add("Allow", "GET,POST,OPTIONS");
+            return Ok();
+        }
+
         [HttpGet(Name = "GetAuthors")]
         public ActionResult<IEnumerable<AuthorOutputDto>> GetAllAuthors(
             [FromHeader(Name = "Content-Type")] string mediaType,
@@ -42,20 +50,18 @@ namespace anBlogg.WebApi.Controllers
 
             var authorsFromRepo = blogRepository.GetAllAuthors(parameters);
 
-            AddPaginationHeader(authorsFromRepo);
-
             var shapedAuthors = GetShapedAuthors
                 (authorsFromRepo, parameters.Fields, fullMedia);
 
+            AddPaginationHeader(authorsFromRepo);
+
+            dynamic toReturn = shapedAuthors;
+
             if (IncludeLinks(parsedMediaType))
-            {
-                var linkedAuthors = GetCollectionWithLinks
+                toReturn = GetCollectionWithLinks
                     (authorsFromRepo, shapedAuthors, parameters);
 
-                return Ok(linkedAuthors);
-            }
-
-            return Ok(shapedAuthors);
+            return Ok(toReturn);
         }
 
         private bool CantValidate(IResourceParameters parameters, bool fullMedia)
@@ -181,6 +187,35 @@ namespace anBlogg.WebApi.Controllers
         {
             var authors = resources as PagedList<Author>;
             return authors.Select(author => new AuthorIdsSet(author.Id));
+        }
+
+        [HttpPost(Name = "CreateAuthor")]
+        public IActionResult CreateAuthor([FromBody]AuthorInputDto newAuthor, 
+            [FromHeader(Name = "Content-Type")] string mediaType)
+        {
+            if (validator.DontMatchRules(newAuthor as IAuthorInputDto, ModelState))
+                return BadRequest(ModelState);
+            
+            var authorToAdd = mapper.Map<Author>(newAuthor);
+
+            var authorFromRepo = blogRepository.GetAuthor(authorToAdd.Id);
+            if (authorFromRepo != null)
+                return BadRequest();
+
+            blogRepository.AddAuthor(authorToAdd);
+            blogRepository.SaveChanges();
+
+            var mappedAuthor = mapper.Map<AuthorOutputDto>(authorToAdd);
+            dynamic toReturn = mappedAuthor;
+
+            if (IncludeLinks(mediaType))
+            {
+                var shapedAuthor = properties.ShapeSingleData(mappedAuthor);
+                var idsSet = new AuthorIdsSet(authorToAdd.Id);
+                toReturn = GetLinkedResource(shapedAuthor, idsSet);
+            }
+
+            return CreatedAtRoute("GetAuthor", new { authorId = authorToAdd.Id }, toReturn);
         }
     }
 }

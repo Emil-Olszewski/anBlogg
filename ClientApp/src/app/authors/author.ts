@@ -16,3 +16,8 @@ export interface AuthorResolved {
     author: Author;
     error?: any;
 }
+
+export class AuthorCreateViewModel {
+    id: string;
+    displayName: string;
+}

@@ -11,11 +11,11 @@ namespace anBlogg.WebApi.Profiles
         {
             CreateMap<Author, IAuthorShortOutputDto>()
                 .ForMember(dest => dest.Score,
-                opt => opt.MapFrom(src => src.Score.Value));
+                    opt => opt.MapFrom(src => src.Score.Value));
 
             CreateMap<Author, AuthorShortOutputDto>()
                 .ForMember(dest => dest.Score,
-                opt => opt.MapFrom(src => src.Score.Value));
+                    opt => opt.MapFrom(src => src.Score.Value));
 
             CreateMap<Author, AuthorOutputDto>()
                 .ForMember(dest => dest.Score, opt =>
@@ -24,6 +24,8 @@ namespace anBlogg.WebApi.Profiles
                     opt.Ignore())
                 .ForMember(dest => dest.CommentsNumber, opt =>
                     opt.Ignore());
+
+            CreateMap<AuthorInputDto, Author>();
         }
     }
 }

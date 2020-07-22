@@ -1,6 +1,10 @@
-<form>
+<form *ngIf="isLoggedIn">
     <div class="form-group">
-        <textarea class="form-control an-dashed" placeholder="Let author know what do you think!"></textarea>
+        <textarea class="form-control an-dashed" placeholder="Let author know what do you think!" name="comment" [(ngModel)]="comment"></textarea>
         <a href="javascript:void(0)" class="an-text-secondary" (click)="onSend(comment)">Send comment</a>
     </div>
 </form>
+
+<div class="text-muted" *ngIf="!isLoggedIn">
+    Login to comment
+</div>

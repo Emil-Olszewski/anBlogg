@@ -38,6 +38,7 @@ namespace anBlogg.WebApi.Controllers.Common
         {
             var header = pagination.CreateHeader(source);
             Response.Headers.Add(header.Name, header.Value);
+            Response.Headers.Add("Access-Control-Expose-Headers", header.Name);
         }
 
         protected bool IncludeLinks(MediaTypeHeaderValue mediaType)
@@ -120,6 +121,21 @@ namespace anBlogg.WebApi.Controllers.Common
                 links.Add(new LinkDto(pagesLinks.Next, "nextPage", "GET"));
 
             return links;
+        }
+
+        protected bool IsUserIdNotEqualTo(Guid id)
+        {
+            return GetParsedUserId() != id ? true : false;
+        }
+
+        protected Guid GetParsedUserId()
+        {
+            return Guid.Parse(GetUserId());
+        }
+
+        protected string GetUserId()
+        {
+            return User.Claims.FirstOrDefault(c => c.Type == "sub")?.Value;
         }
 
         protected abstract IEnumerable<LinkDto> CreateLinksForSingleResource

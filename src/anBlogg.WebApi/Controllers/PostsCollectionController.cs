@@ -15,7 +15,6 @@ namespace anBlogg.WebApi.Controllers
 {
     [ApiController]
     [Route("api/posts")]
-    [Authorize]
     public class PostsCollectionController : PostsControllerBase
     {
         public PostsCollectionController(IMapper mapper, IBlogRepository blogRepository,
@@ -46,6 +45,7 @@ namespace anBlogg.WebApi.Controllers
             var shapedPosts = properties.ShapeData(mappedPosts, parameters.Fields);
 
             AddPaginationHeader(postsFromRepo);
+
 
             if (IncludeLinks(mediaType))
             {

@@ -7,7 +7,7 @@
             <a class="an-text-secondary" [routerLink]="['/authors/', post.author.id]">{{post.author.displayName}}</a>
         </h6>
         <h6 class="card-subtitle text-muted">
-            {{post.created | date: 'short'}}
+            {{post.created | date: 'dd LLLL yyyy, HH:MM'}}
         </h6>
 
         <!-- contents -->
@@ -24,7 +24,9 @@
             class="badge an-bg-secondary text-white">
             Fold
         </a>
-
+        <div class="mt-5">
+            <comment-list [commentsInfo] = getCommentsInfo()></comment-list>
+        </div>
     </div>
     
 </div>

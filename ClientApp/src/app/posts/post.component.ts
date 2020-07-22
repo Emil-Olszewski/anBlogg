@@ -1,6 +1,7 @@
 import { Component, OnInit, Input } from '@angular/core';
 import { Post } from './post';
 import { Constants } from '../constants';
+import { CommentsInfo } from '../comments/comment';
 
 @Component({
     selector: 'post',
@@ -19,7 +20,6 @@ export class PostComponent implements OnInit {
     constructor() { }
 
     ngOnInit() {
-        console.log(this.post);
         if (this.post.contents.length > Constants.POST_SHORTENED_LENGTH) {
             this.hided = this.longEnoughToHide = true;
             this.postContentsShortened =
@@ -38,5 +38,13 @@ export class PostComponent implements OnInit {
     onFold() {
         this.postContents = this.postContentsShortened;
         this.hided = true;
+    }
+
+    getCommentsInfo() {
+        return {
+            authorId: this.post.author.id,
+            postId: this.post.id,
+            amount: this.post.commentsNumber
+        } as CommentsInfo;
     }
 }

@@ -25,10 +25,11 @@
         <div class="form-group">
           <label for="contentsId">Contents</label>
           <textarea class="form-control" [ngClass]="{'an-invalid': isControlInvalid['contents']}"
-            placeholder="Share your thoughts" id="contentsId" formControlName="contents"></textarea>
+            placeholder="Share your thoughts" id="contentsId" formControlName="contents" rows="20"></textarea>
           <!-- errors  -->
           <div *ngIf="isControlInvalid['contents']" class="an-invalid-text">
             <span *ngIf="getErrorsFor('contents')?.required">{{validationMessages.required}}</span>
+            <span *ngIf="getErrorsFor('contents')?.minlength">{{validationMessages.minLength}}</span>
             <span *ngIf="getErrorsFor('contents')?.maxlength">{{validationMessages.maxLength}}</span>
           </div>
         </div>

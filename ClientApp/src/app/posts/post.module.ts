@@ -8,6 +8,7 @@ import { PostUrlListComponent } from './post-url-list/post-url-list.component';
 import { PostComponent } from './post.component';
 import { PostEditComponent } from './post-edit/post-edit.component';
 import { ReactiveFormsModule } from '@angular/forms';
+import { PageNavigationComponent } from '../page-navigation/page-navigation.component';
 
 @NgModule({
   declarations: [
@@ -15,6 +16,7 @@ import { ReactiveFormsModule } from '@angular/forms';
     PostUrlListComponent,
     PostListComponent,
     PostEditComponent,
+    PageNavigationComponent
   ],
   imports: [
     CommonModule,

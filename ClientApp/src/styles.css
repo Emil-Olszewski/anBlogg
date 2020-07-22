@@ -15,7 +15,7 @@ body {
 .card img {
     width: 100%;
     height: auto;
-    border: 10px solid #46BCAE;
+    border: 5px solid #46BCAE;
 }
 
 .card-header {
@@ -33,6 +33,10 @@ body {
     border-style: dashed;
     box-shadow: none;
     display: block;
+}
+
+.form-control {
+    border-radius: 0;
 }
 
 .an-dashed {
@@ -81,11 +85,9 @@ body {
 }
 
 .an-invalid {
-    border: 1px solid rgba(255, 0, 0, 0.315);
-    background-color: rgba(255, 0, 0, 0.007);
+    border-bottom: 5px solid rgba(255, 0, 0, 0.5);
 }
 
 .an-invalid-text {
     color: red;
 }
-

@@ -11,7 +11,7 @@ import { AuthIncterceptorService } from './auth-interceptor.service';
     exports: [],
     declarations: [
         SigninRedirectCallbackComponent,
-        SignoutRedirectCallbackComponent
+        SignoutRedirectCallbackComponent,
     ],
     providers: [ {provide: HTTP_INTERCEPTORS, useClass: AuthIncterceptorService, multi: true}],
 })

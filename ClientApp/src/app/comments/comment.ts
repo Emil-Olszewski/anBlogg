@@ -1,5 +1,4 @@
-import { AuthorShort } from '../authors/author-short';
-
+import { AuthorShort } from '../authors/author';
 
 export interface Comment {
     id: number;
@@ -7,4 +6,10 @@ export interface Comment {
     createad: Date;
     contents: string;
     score: number;
+}
+
+export class CommentsInfo {
+    authorId: string;
+    postId: string;
+    amount: number;
 }

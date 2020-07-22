@@ -20,7 +20,8 @@ namespace anBlogg.Infrastructure.FluentValidation
             {
                 new PostResourceParametersValidator(),
                 new PostInputDtoValidator(),
-                new CommentInputValidator()
+                new CommentInputDtoValidator(),
+                new AuthorInputDtoValidator()
             };
 
             this.properties = properties;

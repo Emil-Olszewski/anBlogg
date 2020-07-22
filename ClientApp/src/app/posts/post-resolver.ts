@@ -14,7 +14,7 @@ export class PostResolver implements Resolve<PostResolved> {
     if (id === '0') {
       return of({ post: new Post() });
     }
-
+    
     return this.postService.getPost(id).pipe(
       map((post) => ({ post: post })),
       catchError((error) => {

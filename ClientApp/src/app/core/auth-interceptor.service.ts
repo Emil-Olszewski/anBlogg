@@ -1,7 +1,6 @@
 import { Injectable } from '@angular/core';
 import { HttpEvent, HttpInterceptor, HttpHandler, HttpRequest, HttpHeaders } from '@angular/common/http';
 import { Observable, from } from 'rxjs';
-import { CoreModule } from './core.module';
 import { AuthService } from './auth-service.component';
 import { Constants } from '../constants';
 
@@ -15,7 +14,8 @@ export class AuthIncterceptorService implements HttpInterceptor {
                 if(!token) {
                     return next.handle(req).toPromise();
                 }
-                const headers = new HttpHeaders().set('Authorization', `Bearer ${token}`);
+                let headers = new HttpHeaders().set('Authorization', `Bearer ${token}`);
+                headers = headers.set('Content-Type', 'application/json');
                 const authReq = req.clone({ headers });
                 return next.handle(authReq).toPromise();
             }));

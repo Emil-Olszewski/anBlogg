@@ -1,6 +1,7 @@
 // Copyright (c) Brock Allen & Dominick Baier. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See LICENSE in the project root for license information.
 
+using anBlogg.IDP.Areas.Identity.Pages.Account;
 using anBlogg.IDP.Models;
 using IdentityModel;
 using IdentityServer4.Events;
@@ -15,6 +16,7 @@ using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using System;
 using System.Linq;
+using System.Security.Claims;
 using System.Threading.Tasks;
 
 namespace anBlogg.IDP
@@ -341,6 +343,29 @@ namespace anBlogg.IDP
             }
 
             return vm;
+        }
+
+        [HttpPost]
+        [Route("Account/Register")]
+        public async Task<IActionResult> Register([FromBody]RegisterRequestViewModel model)
+        {
+            if (!ModelState.IsValid)
+                return BadRequest(ModelState);
+
+            var user = new ApplicationUser
+            {
+                UserName = model.Name,
+                Email = model.Email
+            };
+
+            var result = await _userManager.CreateAsync(user, model.Password);
+
+            if (!result.Succeeded)
+                return BadRequest(result.Errors);
+
+            await _userManager.AddClaimAsync(user, new Claim("account_id", user.Id));
+
+            return Ok();
         }
     }
 }

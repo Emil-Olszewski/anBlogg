@@ -10,8 +10,8 @@ using anBlogg.IDP.Data;
 namespace anBlogg.IDP.Data.Migrations.IdentityServer.ConfigurationDb
 {
     [DbContext(typeof(ConfigurationDbContext))]
-    [Migration("20200710080420_RepairSeedConfigurationMigration")]
-    partial class RepairSeedConfigurationMigration
+    [Migration("20200715101636_Initial")]
+    partial class Initial
     {
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
@@ -67,7 +67,7 @@ namespace anBlogg.IDP.Data.Migrations.IdentityServer.ConfigurationDb
                         new
                         {
                             Id = 1,
-                            Created = new DateTime(2020, 7, 10, 8, 4, 19, 967, DateTimeKind.Utc).AddTicks(7684),
+                            Created = new DateTime(2020, 7, 15, 10, 16, 35, 958, DateTimeKind.Utc).AddTicks(3342),
                             DisplayName = "anBlogg API",
                             Enabled = true,
                             Name = "anBloggApi",
@@ -405,7 +405,7 @@ namespace anBlogg.IDP.Data.Migrations.IdentityServer.ConfigurationDb
                             ClientClaimsPrefix = "client_",
                             ClientId = "spa-client",
                             ClientName = "anBlogg web app",
-                            Created = new DateTime(2020, 7, 10, 8, 4, 19, 969, DateTimeKind.Utc).AddTicks(7617),
+                            Created = new DateTime(2020, 7, 15, 10, 16, 35, 959, DateTimeKind.Utc).AddTicks(8256),
                             DeviceCodeLifetime = 300,
                             EnableLocalLogin = true,
                             Enabled = true,
@@ -811,7 +811,7 @@ namespace anBlogg.IDP.Data.Migrations.IdentityServer.ConfigurationDb
                         new
                         {
                             Id = 1,
-                            Created = new DateTime(2020, 7, 10, 8, 4, 19, 969, DateTimeKind.Utc).AddTicks(4213),
+                            Created = new DateTime(2020, 7, 15, 10, 16, 35, 959, DateTimeKind.Utc).AddTicks(6225),
                             DisplayName = "Your user identifier",
                             Emphasize = false,
                             Enabled = true,
@@ -823,7 +823,7 @@ namespace anBlogg.IDP.Data.Migrations.IdentityServer.ConfigurationDb
                         new
                         {
                             Id = 2,
-                            Created = new DateTime(2020, 7, 10, 8, 4, 19, 969, DateTimeKind.Utc).AddTicks(5189),
+                            Created = new DateTime(2020, 7, 15, 10, 16, 35, 959, DateTimeKind.Utc).AddTicks(6691),
                             Description = "Your user profile information",
                             DisplayName = "User profile",
                             Emphasize = true,

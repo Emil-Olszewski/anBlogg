@@ -43,5 +43,6 @@ namespace anBlogg.Application.Services
         int GetCommentsNumberForPost(Guid id);
 
         void SaveChanges();
+        void AddAuthor(Author author);
     }
 }

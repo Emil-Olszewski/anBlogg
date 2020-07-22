@@ -1,6 +1,8 @@
 import { Component } from '@angular/core';
 import { Router, Event, NavigationStart, NavigationEnd, NavigationCancel, NavigationError } from '@angular/router';
 import { AuthService } from './core/auth-service.component';
+import { AuthorService } from './authors/author-service';
+import { Author } from './authors/author';
 
 @Component({
   selector: 'app-root',
@@ -11,8 +13,10 @@ export class AppComponent {
   title = 'ClientApp';
   loading = true;
   isLoggedIn = false;
+  author$ = this.authorService.authorLoggedAction$;
 
-  constructor(private router: Router, private authService: AuthService) {
+  constructor(private router: Router, private authService: AuthService, 
+    private authorService: AuthorService) {
     router.events.subscribe((routerEvent: Event) => {
       this.checkRouterEvent(routerEvent);
     });

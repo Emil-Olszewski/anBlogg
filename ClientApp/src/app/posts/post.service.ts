@@ -4,26 +4,30 @@ import { catchError } from 'rxjs/operators';
 import { Post } from './post';
 import { Constants } from '../constants';
 import { Observable } from 'rxjs';
+import { AuthorService } from '../authors/author-service';
 
 @Injectable({ providedIn: 'root' })
 export class PostService {
   private postsUrl = Constants.API_URL + 'posts/';
   private authorsUrl = Constants.API_URL + 'authors/';
 
-  constructor(private http: HttpClient) {}
+  constructor(private http: HttpClient, private authorService: AuthorService) {}
 
   getPosts(page: number, authorId: string = null) {
-    const requestBody = {
+    
+    const options = {
+      observe: 'response' as const,
       params: {
-        pageNumber: page > 0 ? page : 1,
-        postsDisplayed: 10,
-      },
+        pageNumber: page,
+        pageSize: 5
+      }
     };
+    
     const url = authorId ? this.authorsUrl + authorId + '/posts' : this.postsUrl;
-    return this.http.get<Post[]>(url, <any>requestBody).pipe(
-      //tap(data => console.log(JSON.stringify(data))),
+
+    return this.http.get<Post[]>(url, <any>options).pipe(
       catchError(this.handleError)
-    ) as Observable<Post[]>;
+    ) as Observable<any>;
   }
 
   getPost(postId: string) {
@@ -32,7 +36,8 @@ export class PostService {
       ) as Observable<Post>;
   }
 
-  postPost(authorId: string, post: Post) {
+  postPost(post: Post) {
+    const authorId = this.authorService.loggedAuthorId;
     const url =  this.authorsUrl + authorId + '/posts';
     return this.http.post<Post>(url, post).pipe(
       catchError(this.handleError)

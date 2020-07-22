@@ -37,6 +37,11 @@ namespace anBlogg.Application.Services.Implementations
             return context.Authors.Find(id);
         }
 
+        public void AddAuthor(Author author)
+        {
+            context.Authors.Add(author);
+        }
+
         public bool AuthorNotExist(Guid id)
         {
             return !context.Authors.Any(a => a.Id == id);

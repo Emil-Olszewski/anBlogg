@@ -58,7 +58,7 @@ namespace anBlogg.IDP
 
             static void SetupIdentity(IdentityOptions options)
             {
-                options.SignIn.RequireConfirmedEmail = true;
+                options.SignIn.RequireConfirmedEmail = false;
             }
 
             var builder = services.AddIdentityServer(SetupIdentityServer)
